@@ -3,23 +3,16 @@
 
 // ============ Unit Types ============
 
-export type WeightUnit = "mg" | "g" | "gram" | "kg";
-export type VolumeUnit = "ml" | "l" | "liter";
-export type CountUnit =
-  | "pcs"
-  | "pack"
-  | "piece"
-  | "buah"
-  | "biji"
-  | "sachet"
-  | "butir";
+export type WeightUnit = 'mg' | 'g' | 'gram' | 'kg';
+export type VolumeUnit = 'ml' | 'l' | 'liter';
+export type CountUnit = 'pcs' | 'pack' | 'piece' | 'buah' | 'biji' | 'sachet' | 'butir';
 export type Unit = WeightUnit | VolumeUnit | CountUnit | string;
 
 // Base units for each category
 export const BASE_UNITS = {
-  weight: "mg",
-  volume: "ml",
-  count: "pcs",
+  weight: 'mg',
+  volume: 'ml',
+  count: 'pcs',
 } as const;
 
 // ============ Conversion Factors (to base unit) ============
@@ -62,14 +55,12 @@ const COUNT_TO_PCS: Record<string, number> = {
 /**
  * Determine the unit category
  */
-export function getUnitCategory(
-  unit: string
-): "weight" | "volume" | "count" | "unknown" {
+export function getUnitCategory(unit: string): 'weight' | 'volume' | 'count' | 'unknown' {
   const normalized = unit.toLowerCase();
-  if (WEIGHT_TO_MG[normalized]) return "weight";
-  if (VOLUME_TO_ML[normalized]) return "volume";
-  if (COUNT_TO_PCS[normalized]) return "count";
-  return "unknown";
+  if (WEIGHT_TO_MG[normalized]) return 'weight';
+  if (VOLUME_TO_ML[normalized]) return 'volume';
+  if (COUNT_TO_PCS[normalized]) return 'count';
+  return 'unknown';
 }
 
 /**
@@ -77,12 +68,7 @@ export function getUnitCategory(
  */
 export function getConversionFactor(unit: string): number {
   const normalized = unit.toLowerCase();
-  return (
-    WEIGHT_TO_MG[normalized] ||
-    VOLUME_TO_ML[normalized] ||
-    COUNT_TO_PCS[normalized] ||
-    1
-  );
+  return WEIGHT_TO_MG[normalized] || VOLUME_TO_ML[normalized] || COUNT_TO_PCS[normalized] || 1;
 }
 
 /**
@@ -91,12 +77,12 @@ export function getConversionFactor(unit: string): number {
 export function getBaseUnit(unit: string): string {
   const category = getUnitCategory(unit);
   switch (category) {
-    case "weight":
-      return "mg";
-    case "volume":
-      return "ml";
-    case "count":
-      return "pcs";
+    case 'weight':
+      return 'mg';
+    case 'volume':
+      return 'ml';
+    case 'count':
+      return 'pcs';
     default:
       return unit;
   }
@@ -121,16 +107,12 @@ export function fromBaseUnit(baseValue: number, targetUnit: string): number {
 /**
  * Convert between any two compatible units
  */
-export function convertUnit(
-  value: number,
-  fromUnit: string,
-  toUnit: string
-): number {
+export function convertUnit(value: number, fromUnit: string, toUnit: string): number {
   const fromCategory = getUnitCategory(fromUnit);
   const toCategory = getUnitCategory(toUnit);
 
   // If same category, convert via base unit
-  if (fromCategory === toCategory && fromCategory !== "unknown") {
+  if (fromCategory === toCategory && fromCategory !== 'unknown') {
     const baseValue = toBaseUnit(value, fromUnit);
     return fromBaseUnit(baseValue, toUnit);
   }
@@ -158,7 +140,7 @@ export function calculateIngredientCostWithConversion(
   recipeUnit: string,
   marketPrice: number,
   marketQuantity: number,
-  marketUnit: string
+  marketUnit: string,
 ): number {
   // Convert both to same base unit
   const recipeInBase = toBaseUnit(recipeQuantity, recipeUnit);
@@ -177,44 +159,44 @@ export function calculateIngredientCostWithConversion(
  * Get display-friendly unit options for a category
  */
 export function getUnitOptions(
-  category: "weight" | "volume" | "count" | "all" = "all"
+  category: 'weight' | 'volume' | 'count' | 'all' = 'all',
 ): { value: string; label: string }[] {
   const weightOptions = [
-    { value: "mg", label: "Miligram (mg)" },
-    { value: "g", label: "Gram (g)" },
-    { value: "kg", label: "Kilogram (kg)" },
-    { value: "ons", label: "Ons (100g)" },
+    { value: 'mg', label: 'Miligram (mg)' },
+    { value: 'g', label: 'Gram (g)' },
+    { value: 'kg', label: 'Kilogram (kg)' },
+    { value: 'ons', label: 'Ons (100g)' },
   ];
 
   const volumeOptions = [
-    { value: "ml", label: "Mililiter (ml)" },
-    { value: "l", label: "Liter (l)" },
-    { value: "tsp", label: "Sendok Teh (tsp)" },
-    { value: "tbsp", label: "Sendok Makan (tbsp)" },
-    { value: "cup", label: "Cup" },
-    { value: "shot", label: "Shot (30ml)" },
+    { value: 'ml', label: 'Mililiter (ml)' },
+    { value: 'l', label: 'Liter (l)' },
+    { value: 'tsp', label: 'Sendok Teh (tsp)' },
+    { value: 'tbsp', label: 'Sendok Makan (tbsp)' },
+    { value: 'cup', label: 'Cup' },
+    { value: 'shot', label: 'Shot (30ml)' },
   ];
 
   const countOptions = [
-    { value: "pcs", label: "Pieces (pcs)" },
-    { value: "pack", label: "Pack" },
-    { value: "sachet", label: "Sachet" },
-    { value: "butir", label: "Butir" },
-    { value: "lembar", label: "Lembar" },
-    { value: "slice", label: "Slice/Iris" },
-    { value: "buah", label: "Buah" },
-    { value: "biji", label: "Biji" },
-    { value: "siung", label: "Siung" },
-    { value: "batang", label: "Batang" },
-    { value: "ikat", label: "Ikat" },
+    { value: 'pcs', label: 'Pieces (pcs)' },
+    { value: 'pack', label: 'Pack' },
+    { value: 'sachet', label: 'Sachet' },
+    { value: 'butir', label: 'Butir' },
+    { value: 'lembar', label: 'Lembar' },
+    { value: 'slice', label: 'Slice/Iris' },
+    { value: 'buah', label: 'Buah' },
+    { value: 'biji', label: 'Biji' },
+    { value: 'siung', label: 'Siung' },
+    { value: 'batang', label: 'Batang' },
+    { value: 'ikat', label: 'Ikat' },
   ];
 
   switch (category) {
-    case "weight":
+    case 'weight':
       return weightOptions;
-    case "volume":
+    case 'volume':
       return volumeOptions;
-    case "count":
+    case 'count':
       return countOptions;
     default:
       return [...weightOptions, ...volumeOptions, ...countOptions];
@@ -228,24 +210,23 @@ export function formatQuantityWithUnit(quantity: number, unit: string): string {
   const normalized = unit.toLowerCase();
 
   // Auto-convert to more readable unit if value is very large/small
-  if (getUnitCategory(normalized) === "weight") {
-    if (normalized === "mg" && quantity >= 1000000) {
+  if (getUnitCategory(normalized) === 'weight') {
+    if (normalized === 'mg' && quantity >= 1000000) {
       return `${(quantity / 1000000).toFixed(2)} kg`;
     }
-    if (normalized === "mg" && quantity >= 1000) {
+    if (normalized === 'mg' && quantity >= 1000) {
       return `${(quantity / 1000).toFixed(1)} g`;
     }
-    if (normalized === "g" && quantity >= 1000) {
+    if (normalized === 'g' && quantity >= 1000) {
       return `${(quantity / 1000).toFixed(2)} kg`;
     }
   }
 
-  if (getUnitCategory(normalized) === "volume") {
-    if (normalized === "ml" && quantity >= 1000) {
+  if (getUnitCategory(normalized) === 'volume') {
+    if (normalized === 'ml' && quantity >= 1000) {
       return `${(quantity / 1000).toFixed(2)} l`;
     }
   }
 
   return `${quantity} ${unit}`;
 }
-

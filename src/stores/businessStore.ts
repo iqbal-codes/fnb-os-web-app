@@ -1,6 +1,6 @@
-import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
-import type { Business } from "@/types";
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import type { Business } from '@/types';
 
 interface BusinessState {
   currentBusiness: Business | null;
@@ -27,13 +27,12 @@ export const useBusinessStore = create<BusinessState>()(
       clearBusiness: () => set({ currentBusiness: null, businesses: [] }),
     }),
     {
-      name: "sajiplan-business",
+      name: 'sajiplan-business',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         currentBusiness: state.currentBusiness,
         businesses: state.businesses,
       }),
-    }
-  )
+    },
+  ),
 );
-

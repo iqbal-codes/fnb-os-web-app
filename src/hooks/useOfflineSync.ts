@@ -1,10 +1,10 @@
 // Offline Order Queue Hook
 // Stores orders locally when offline and syncs when back online
-import { useEffect, useCallback } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiClient } from "@/lib/api/client";
-import { useBusinessStore } from "@/stores/businessStore";
-import { toast } from "sonner";
+import { useEffect, useCallback } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiClient } from '@/lib/api/client';
+import { useBusinessStore } from '@/stores/businessStore';
+import { toast } from 'sonner';
 
 interface OfflineOrder {
   id: string;
@@ -26,13 +26,13 @@ interface OrderItem {
   subtotal: number;
 }
 
-const STORAGE_KEY = "sajiplan_offline_orders";
+const STORAGE_KEY = 'sajiplan_offline_orders';
 
 /**
  * Get pending orders from localStorage
  */
 export function getPendingOrders(): OfflineOrder[] {
-  if (typeof window === "undefined") return [];
+  if (typeof window === 'undefined') return [];
   const stored = localStorage.getItem(STORAGE_KEY);
   return stored ? JSON.parse(stored) : [];
 }
@@ -41,16 +41,14 @@ export function getPendingOrders(): OfflineOrder[] {
  * Save orders to localStorage
  */
 function saveOrders(orders: OfflineOrder[]) {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
 }
 
 /**
  * Add order to offline queue
  */
-export function addOfflineOrder(
-  order: Omit<OfflineOrder, "id" | "synced" | "created_at">
-): string {
+export function addOfflineOrder(order: Omit<OfflineOrder, 'id' | 'synced' | 'created_at'>): string {
   const id = `offline_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
   const newOrder: OfflineOrder = {
     ...order,
@@ -93,7 +91,7 @@ export function useOfflineOrderSync() {
 
   const syncMutation = useMutation({
     mutationFn: async (order: OfflineOrder) => {
-      const response = await apiClient.post("/api/sales", {
+      const response = await apiClient.post('/api/sales', {
         business_id: order.business_id,
         items: order.items,
         subtotal: order.subtotal,
@@ -121,13 +119,13 @@ export function useOfflineOrderSync() {
         await syncMutation.mutateAsync(order);
         syncedCount++;
       } catch (error) {
-        console.error("Failed to sync order:", order.id, error);
+        console.error('Failed to sync order:', order.id, error);
       }
     }
 
     if (syncedCount > 0) {
       clearSyncedOrders();
-      queryClient.invalidateQueries({ queryKey: ["sales-history"] });
+      queryClient.invalidateQueries({ queryKey: ['sales-history'] });
       toast.success(`${syncedCount} pesanan offline berhasil disinkronkan`);
     }
   }, [syncMutation, queryClient]);
@@ -138,7 +136,7 @@ export function useOfflineOrderSync() {
       syncPendingOrders();
     };
 
-    window.addEventListener("online", handleOnline);
+    window.addEventListener('online', handleOnline);
 
     // Also try to sync on mount if online
     if (navigator.onLine) {
@@ -146,7 +144,7 @@ export function useOfflineOrderSync() {
     }
 
     return () => {
-      window.removeEventListener("online", handleOnline);
+      window.removeEventListener('online', handleOnline);
     };
   }, [syncPendingOrders]);
 
@@ -163,4 +161,3 @@ export function useOfflineOrderSync() {
 export function getOfflineOrderNumber(id: string): string {
   return `OFF-${id.slice(-8).toUpperCase()}`;
 }
-

@@ -1,41 +1,40 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import { NextIntlClientProvider, hasLocale } from "next-intl";
-import { getMessages, setRequestLocale } from "next-intl/server";
-import { notFound } from "next/navigation";
-import { Toaster } from "sonner";
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import { NextIntlClientProvider, hasLocale } from 'next-intl';
+import { getMessages, setRequestLocale } from 'next-intl/server';
+import { notFound } from 'next/navigation';
+import { Toaster } from 'sonner';
 
-import { routing } from "@/i18n/routing";
-import { QueryProvider } from "@/components/providers/QueryProvider";
-import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { routing } from '@/i18n/routing';
+import { QueryProvider } from '@/components/providers/QueryProvider';
+import { ThemeProvider } from '@/components/providers/ThemeProvider';
 // Note: OnlineStatusProvider and OfflineIndicator temporarily disabled
-import "@/app/globals.css";
+import '@/app/globals.css';
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | SajiPlan",
-    default: "SajiPlan - F&B Business OS",
+    template: '%s | SajiPlan',
+    default: 'SajiPlan - F&B Business OS',
   },
-  description:
-    "Plan, run, and optimize your F&B business with AI-powered insights",
-  manifest: "/manifest.json",
+  description: 'Plan, run, and optimize your F&B business with AI-powered insights',
+  manifest: '/manifest.json',
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#0a0a0a' },
   ],
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
-    title: "SajiPlan",
+    statusBarStyle: 'default',
+    title: 'SajiPlan',
   },
   viewport: {
-    width: "device-width",
+    width: 'device-width',
     initialScale: 1,
     maximumScale: 1,
     userScalable: false,
-    viewportFit: "cover",
+    viewportFit: 'cover',
   },
 };
 
@@ -65,14 +64,14 @@ export default async function LocaleLayout({ children, params }: Props) {
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="mobile-web-app-capable" content="yes" />
+        <link rel='apple-touch-icon' href='/icons/icon-192x192.png' />
+        <meta name='apple-mobile-web-app-capable' content='yes' />
+        <meta name='mobile-web-app-capable' content='yes' />
       </head>
       <body className={`${inter.className} antialiased`}>
         <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
+          attribute='class'
+          defaultTheme='system'
           enableSystem
           disableTransitionOnChange
         >
@@ -81,7 +80,7 @@ export default async function LocaleLayout({ children, params }: Props) {
               {/* <OnlineStatusProvider> */}
               {/* <OfflineIndicator /> */}
               {children}
-              <Toaster position="top-center" richColors />
+              <Toaster position='top-center' richColors />
               {/* </OnlineStatusProvider> */}
             </QueryProvider>
           </NextIntlClientProvider>
@@ -90,4 +89,3 @@ export default async function LocaleLayout({ children, params }: Props) {
     </html>
   );
 }
-

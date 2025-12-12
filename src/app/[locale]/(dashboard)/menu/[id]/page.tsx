@@ -1,8 +1,8 @@
-import type { Metadata } from "next";
-import { MenuForm } from "@/components/menu/MenuForm";
+import type { Metadata } from 'next';
+import { MenuForm } from '@/components/menu/MenuForm';
 
 export const metadata: Metadata = {
-  title: "Edit Menu",
+  title: 'Edit Menu',
 };
 
 type Props = {
@@ -13,9 +13,8 @@ export default async function EditMenuPage({ params }: Props) {
   const { id } = await params;
 
   return (
-    <div className="animate-fade-in">
+    <div className='animate-fade-in'>
       <MenuForm menuId={id} />
     </div>
   );
 }
-

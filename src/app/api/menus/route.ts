@@ -1,5 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
+import { createClient } from '@/lib/supabase/server';
+import { NextResponse } from 'next/server';
 
 // GET - Get all menus for current user's business
 export async function GET(request: Request) {
@@ -11,18 +11,18 @@ export async function GET(request: Request) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const category = searchParams.get("category");
-    const activeOnly = searchParams.get("active") === "true";
+    const category = searchParams.get('category');
+    const activeOnly = searchParams.get('active') === 'true';
 
     // Get user's business
     const { data: business } = await supabase
-      .from("businesses")
-      .select("id")
-      .eq("user_id", user.id)
+      .from('businesses')
+      .select('id')
+      .eq('user_id', user.id)
       .single();
 
     if (!business) {
@@ -30,17 +30,17 @@ export async function GET(request: Request) {
     }
 
     let query = supabase
-      .from("menus")
-      .select("*")
-      .eq("business_id", business.id)
-      .order("sort_order", { ascending: true });
+      .from('menus')
+      .select('*')
+      .eq('business_id', business.id)
+      .order('sort_order', { ascending: true });
 
     if (category) {
-      query = query.eq("category", category);
+      query = query.eq('category', category);
     }
 
     if (activeOnly) {
-      query = query.eq("is_active", true);
+      query = query.eq('is_active', true);
     }
 
     const { data: menus, error } = await query;
@@ -49,11 +49,8 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ menus: menus || [] });
   } catch (error) {
-    console.error("Error fetching menus:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error('Error fetching menus:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -67,39 +64,36 @@ export async function POST(request: Request) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
     const { name, category, description, selling_price, image_url } = body;
 
     if (!name || selling_price === undefined) {
-      return NextResponse.json(
-        { error: "Name and selling price are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Name and selling price are required' }, { status: 400 });
     }
 
     // Get user's business
     const { data: business } = await supabase
-      .from("businesses")
-      .select("id")
-      .eq("user_id", user.id)
+      .from('businesses')
+      .select('id')
+      .eq('user_id', user.id)
       .single();
 
     if (!business) {
       return NextResponse.json(
-        { error: "Business not found. Please complete onboarding." },
-        { status: 404 }
+        { error: 'Business not found. Please complete onboarding.' },
+        { status: 404 },
       );
     }
 
     const { data: menu, error } = await supabase
-      .from("menus")
+      .from('menus')
       .insert({
         business_id: business.id,
         name,
-        category: category || "uncategorized",
+        category: category || 'uncategorized',
         description,
         selling_price,
         image_url,
@@ -112,11 +106,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ menu }, { status: 201 });
   } catch (error) {
-    console.error("Error creating menu:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error('Error creating menu:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-

@@ -1,21 +1,21 @@
-import type { NextConfig } from "next";
-import withPWAInit from "next-pwa";
-import createNextIntlPlugin from "next-intl/plugin";
+import type { NextConfig } from 'next';
+import withPWAInit from 'next-pwa';
+import createNextIntlPlugin from 'next-intl/plugin';
 
 // Create next-intl plugin
-const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const withPWA = withPWAInit({
-  dest: "public",
-  disable: process.env.NODE_ENV === "development",
+  dest: 'public',
+  disable: process.env.NODE_ENV === 'development',
   register: true,
   skipWaiting: true,
   runtimeCaching: [
     {
       urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
-      handler: "NetworkFirst",
+      handler: 'NetworkFirst',
       options: {
-        cacheName: "supabase-cache",
+        cacheName: 'supabase-cache',
         expiration: {
           maxEntries: 50,
           maxAgeSeconds: 60 * 60 * 24, // 24 hours
@@ -25,9 +25,9 @@ const withPWA = withPWAInit({
     },
     {
       urlPattern: /\/_next\/image\?url=.+/i,
-      handler: "CacheFirst",
+      handler: 'CacheFirst',
       options: {
-        cacheName: "next-image-cache",
+        cacheName: 'next-image-cache',
         expiration: {
           maxEntries: 100,
           maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
@@ -36,9 +36,9 @@ const withPWA = withPWAInit({
     },
     {
       urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i,
-      handler: "CacheFirst",
+      handler: 'CacheFirst',
       options: {
-        cacheName: "static-image-cache",
+        cacheName: 'static-image-cache',
         expiration: {
           maxEntries: 100,
           maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
@@ -54,11 +54,11 @@ const nextConfig: NextConfig = {
 
   // Image optimization config
   images: {
-    formats: ["image/avif", "image/webp"],
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
-        protocol: "https",
-        hostname: "*.supabase.co",
+        protocol: 'https',
+        hostname: '*.supabase.co',
       },
     ],
   },
@@ -67,7 +67,7 @@ const nextConfig: NextConfig = {
   experimental: {
     // Enable server actions
     serverActions: {
-      bodySizeLimit: "2mb",
+      bodySizeLimit: '2mb',
     },
   },
 
@@ -78,4 +78,3 @@ const nextConfig: NextConfig = {
 
 // Compose plugins: first next-intl, then PWA
 export default withPWA(withNextIntl(nextConfig));
-

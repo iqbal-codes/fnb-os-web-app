@@ -1,25 +1,19 @@
-"use client";
+'use client';
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useTranslations } from "next-intl";
-import { ChefHat, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useTranslations } from 'next-intl';
+import { ChefHat, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
-import { Link, useRouter } from "@/i18n/navigation";
-import { useLogin, useSendMagicLink } from "@/hooks/useAuth";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { Link, useRouter } from '@/i18n/navigation';
+import { useLogin, useSendMagicLink } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 
 export default function LoginPage() {
   const t = useTranslations();
@@ -28,11 +22,8 @@ export default function LoginPage() {
   const sendMagicLink = useSendMagicLink();
 
   const loginSchema = z.object({
-    email: z
-      .string()
-      .min(1, t("errors.required"))
-      .email(t("errors.invalidEmail")),
-    password: z.string().min(6, t("errors.passwordMin")),
+    email: z.string().min(1, t('errors.required')).email(t('errors.invalidEmail')),
+    password: z.string().min(6, t('errors.passwordMin')),
   });
 
   type LoginFormData = z.infer<typeof loginSchema>;
@@ -45,28 +36,28 @@ export default function LoginPage() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
     },
   });
 
-  const email = watch("email");
+  const email = watch('email');
 
   const onSubmit = async (data: LoginFormData) => {
     try {
       const result = await login.mutateAsync(data);
-      toast.success(t("auth.login.title"));
-      router.push(result.redirect || "/dashboard");
+      toast.success(t('auth.login.title'));
+      router.push(result.redirect || '/dashboard');
       router.refresh();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Login failed";
+      const message = error instanceof Error ? error.message : 'Login failed';
       toast.error(message);
     }
   };
 
   const handleMagicLink = async () => {
     if (!email || !z.string().email().safeParse(email).success) {
-      toast.error(t("errors.invalidEmail"));
+      toast.error(t('errors.invalidEmail'));
       return;
     }
 
@@ -74,125 +65,108 @@ export default function LoginPage() {
       const result = await sendMagicLink.mutateAsync(email);
       toast.success(result.message);
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to send magic link";
+      const message = error instanceof Error ? error.message : 'Failed to send magic link';
       toast.error(message);
     }
   };
 
   return (
-    <div className="w-full max-w-md animate-fade-in">
-      <div className="text-center mb-8">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-2xl font-bold"
-        >
-          <ChefHat className="h-8 w-8 text-primary" />
-          <span className="text-primary">{t("common.appName")}</span>
+    <div className='animate-fade-in w-full max-w-md'>
+      <div className='mb-8 text-center'>
+        <Link href='/' className='inline-flex items-center gap-2 text-2xl font-bold'>
+          <ChefHat className='text-primary h-8 w-8' />
+          <span className='text-primary'>{t('common.appName')}</span>
         </Link>
       </div>
 
-      <Card className="border-border/50">
-        <CardHeader className="text-center pb-4">
-          <CardTitle className="text-2xl">{t("auth.login.title")}</CardTitle>
-          <CardDescription>{t("auth.login.subtitle")}</CardDescription>
+      <Card className='border-border/50'>
+        <CardHeader className='pb-4 text-center'>
+          <CardTitle className='text-2xl'>{t('auth.login.title')}</CardTitle>
+          <CardDescription>{t('auth.login.subtitle')}</CardDescription>
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">{t("auth.login.email")}</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
+            <div className='space-y-2'>
+              <Label htmlFor='email'>{t('auth.login.email')}</Label>
+              <div className='relative'>
+                <Mail className='text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2' />
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder={t("auth.login.emailPlaceholder")}
-                  className="pl-10"
-                  {...register("email")}
+                  id='email'
+                  type='email'
+                  placeholder={t('auth.login.emailPlaceholder')}
+                  className='pl-10'
+                  {...register('email')}
                 />
               </div>
-              {errors.email && (
-                <p className="text-sm text-destructive">
-                  {errors.email.message}
-                </p>
-              )}
+              {errors.email && <p className='text-destructive text-sm'>{errors.email.message}</p>}
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">{t("auth.login.password")}</Label>
+            <div className='space-y-2'>
+              <div className='flex items-center justify-between'>
+                <Label htmlFor='password'>{t('auth.login.password')}</Label>
                 <Link
-                  href="/forgot-password"
-                  className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                  href='/forgot-password'
+                  className='text-muted-foreground hover:text-primary text-xs transition-colors'
                 >
-                  {t("auth.login.forgotPassword")}
+                  {t('auth.login.forgotPassword')}
                 </Link>
               </div>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <div className='relative'>
+                <Lock className='text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2' />
                 <Input
-                  id="password"
-                  type="password"
-                  placeholder={t("auth.login.passwordPlaceholder")}
-                  className="pl-10"
-                  {...register("password")}
+                  id='password'
+                  type='password'
+                  placeholder={t('auth.login.passwordPlaceholder')}
+                  className='pl-10'
+                  {...register('password')}
                 />
               </div>
               {errors.password && (
-                <p className="text-sm text-destructive">
-                  {errors.password.message}
-                </p>
+                <p className='text-destructive text-sm'>{errors.password.message}</p>
               )}
             </div>
 
-            <Button
-              type="submit"
-              className="w-full touch-target"
-              disabled={login.isPending}
-            >
+            <Button type='submit' className='touch-target w-full' disabled={login.isPending}>
               {login.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className='h-4 w-4 animate-spin' />
               ) : (
                 <>
-                  {t("auth.login.signIn")}
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  {t('auth.login.signIn')}
+                  <ArrowRight className='ml-2 h-4 w-4' />
                 </>
               )}
             </Button>
           </form>
 
-          <div className="relative my-6">
+          <div className='relative my-6'>
             <Separator />
-            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-2 text-xs text-muted-foreground">
-              {t("common.or")}
+            <span className='bg-card text-muted-foreground absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-2 text-xs'>
+              {t('common.or')}
             </span>
           </div>
 
           <Button
-            type="button"
-            variant="outline"
-            className="w-full touch-target"
+            type='button'
+            variant='outline'
+            className='touch-target w-full'
             onClick={handleMagicLink}
             disabled={sendMagicLink.isPending}
           >
             {sendMagicLink.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className='h-4 w-4 animate-spin' />
             ) : (
               <>
-                <Mail className="mr-2 h-4 w-4" />
-                {t("auth.login.sendMagicLink")}
+                <Mail className='mr-2 h-4 w-4' />
+                {t('auth.login.sendMagicLink')}
               </>
             )}
           </Button>
 
-          <p className="mt-6 text-center text-sm text-muted-foreground">
-            {t("auth.login.noAccount")}{" "}
-            <Link
-              href="/register"
-              className="font-medium text-primary hover:underline"
-            >
-              {t("auth.login.createOne")}
+          <p className='text-muted-foreground mt-6 text-center text-sm'>
+            {t('auth.login.noAccount')}{' '}
+            <Link href='/register' className='text-primary font-medium hover:underline'>
+              {t('auth.login.createOne')}
             </Link>
           </p>
         </CardContent>
@@ -200,4 +174,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

@@ -1,13 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  api,
-  type CreateBusinessRequest,
-  type UpdateBusinessRequest,
-} from "@/lib/api/client";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { api, type CreateBusinessRequest, type UpdateBusinessRequest } from '@/lib/api/client';
 
 export const businessKeys = {
-  all: ["business"] as const,
-  current: () => [...businessKeys.all, "current"] as const,
+  all: ['business'] as const,
+  current: () => [...businessKeys.all, 'current'] as const,
 };
 
 export function useBusiness() {
@@ -39,4 +35,3 @@ export function useUpdateBusiness() {
     },
   });
 }
-

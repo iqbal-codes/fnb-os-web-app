@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
-import { generateJSON } from "@/lib/ai/gemini";
+import { NextRequest, NextResponse } from 'next/server';
+import { generateJSON } from '@/lib/ai/gemini';
 
 interface IngredientSuggestion {
   name: string;
@@ -24,10 +24,7 @@ export async function POST(request: NextRequest) {
     const { menu_name, menu_description, business_type } = body;
 
     if (!menu_name) {
-      return NextResponse.json(
-        { error: "menu_name is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'menu_name is required' }, { status: 400 });
     }
 
     const prompt = `
@@ -35,8 +32,8 @@ Kamu adalah chef dan konsultan F&B Indonesia.
 
 Berikan resep dan estimasi bahan untuk menu berikut:
 - Nama Menu: ${menu_name}
-- Deskripsi: ${menu_description || "Tidak ada deskripsi"}
-- Tipe Bisnis: ${business_type || "cafe"}
+- Deskripsi: ${menu_description || 'Tidak ada deskripsi'}
+- Tipe Bisnis: ${business_type || 'cafe'}
 
 Berikan dalam format JSON:
 {
@@ -67,11 +64,7 @@ Aturan:
 
     return NextResponse.json({ suggestion });
   } catch (error) {
-    console.error("AI suggest-ingredients error:", error);
-    return NextResponse.json(
-      { error: "Failed to suggest ingredients" },
-      { status: 500 }
-    );
+    console.error('AI suggest-ingredients error:', error);
+    return NextResponse.json({ error: 'Failed to suggest ingredients' }, { status: 500 });
   }
 }
-

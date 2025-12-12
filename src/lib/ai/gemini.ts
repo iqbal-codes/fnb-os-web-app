@@ -1,14 +1,14 @@
 // Gemini AI Client utility
-import { GenerateContentResponse, GoogleGenAI } from "@google/genai";
+import { GenerateContentResponse, GoogleGenAI } from '@google/genai';
 
 // Initialize Gemini client
-const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
-export const generateGeminiAiContent: (
-  content: string
-) => Promise<GenerateContentResponse> = (content: string) =>
+export const generateGeminiAiContent: (content: string) => Promise<GenerateContentResponse> = (
+  content: string,
+) =>
   genAI.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: 'gemini-2.5-flash',
     contents: content,
   });
 
@@ -18,9 +18,9 @@ export const generateGeminiAiContent: (
 export async function generateText(prompt: string): Promise<string> {
   try {
     const response = await generateGeminiAiContent(prompt);
-    return response.text || "";
+    return response.text || '';
   } catch (error) {
-    console.error("Gemini API error:", error);
+    console.error('Gemini API error:', error);
     throw error;
   }
 }
@@ -30,18 +30,18 @@ export async function generateText(prompt: string): Promise<string> {
  */
 export async function generateJSON<T>(prompt: string): Promise<T> {
   const result = await generateText(
-    prompt + "\n\nRespond ONLY with valid JSON, no markdown or explanation."
+    prompt + '\n\nRespond ONLY with valid JSON, no markdown or explanation.',
   );
 
   // Clean up response
   let cleaned = result.trim();
-  if (cleaned.startsWith("```json")) {
+  if (cleaned.startsWith('```json')) {
     cleaned = cleaned.slice(7);
   }
-  if (cleaned.startsWith("```")) {
+  if (cleaned.startsWith('```')) {
     cleaned = cleaned.slice(3);
   }
-  if (cleaned.endsWith("```")) {
+  if (cleaned.endsWith('```')) {
     cleaned = cleaned.slice(0, -3);
   }
 
@@ -51,7 +51,7 @@ export async function generateJSON<T>(prompt: string): Promise<T> {
 // Types for AI responses
 export interface PriceSuggestion {
   suggested_price: number;
-  confidence: "low" | "medium" | "high";
+  confidence: 'low' | 'medium' | 'high';
   reasoning: string;
   market_range: {
     min: number;
@@ -67,8 +67,8 @@ export interface BusinessAnalysis {
 }
 
 export interface BusinessIssue {
-  type: "pricing" | "cogs" | "opex" | "inventory" | "sales";
-  severity: "low" | "medium" | "high";
+  type: 'pricing' | 'cogs' | 'opex' | 'inventory' | 'sales';
+  severity: 'low' | 'medium' | 'high';
   title: string;
   description: string;
 }
@@ -79,4 +79,3 @@ export interface Recommendation {
   impact: string;
   category: string;
 }
-

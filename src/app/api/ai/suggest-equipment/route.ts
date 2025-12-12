@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
-import { generateJSON } from "@/lib/ai/gemini";
+import { NextRequest, NextResponse } from 'next/server';
+import { generateJSON } from '@/lib/ai/gemini';
 
 interface EquipmentItem {
   name: string;
   quantity: number;
   estimated_price: number;
-  priority: "essential" | "recommended" | "optional";
+  priority: 'essential' | 'recommended' | 'optional';
 }
 
 interface EquipmentSuggestion {
@@ -30,13 +30,13 @@ export async function POST(request: NextRequest) {
 Kamu adalah konsultan peralatan F&B Indonesia.
 
 Berikan daftar peralatan starter kit untuk bisnis berikut:
-- Nama Bisnis: ${business_name || "Bisnis F&B"}
-- Tipe Bisnis: ${business_type || "cafe"}
-- Deskripsi: ${description || "Tidak ada deskripsi"}
-- Lokasi: ${location || "Indonesia"}
-- Model Operasi: ${operating_model || "cafe"}
-- Ukuran Tim: ${team_size || "solo"}
-- Target Penjualan: ${target_daily_sales || "30"} transaksi/hari
+- Nama Bisnis: ${business_name || 'Bisnis F&B'}
+- Tipe Bisnis: ${business_type || 'cafe'}
+- Deskripsi: ${description || 'Tidak ada deskripsi'}
+- Lokasi: ${location || 'Indonesia'}
+- Model Operasi: ${operating_model || 'cafe'}
+- Ukuran Tim: ${team_size || 'solo'}
+- Target Penjualan: ${target_daily_sales || '30'} transaksi/hari
 
 Berikan rekomendasi dalam format JSON:
 {
@@ -62,11 +62,7 @@ Aturan:
 
     return NextResponse.json({ suggestion });
   } catch (error) {
-    console.error("AI suggest-equipment error:", error);
-    return NextResponse.json(
-      { error: "Failed to suggest equipment" },
-      { status: 500 }
-    );
+    console.error('AI suggest-equipment error:', error);
+    return NextResponse.json({ error: 'Failed to suggest equipment' }, { status: 500 });
   }
 }
-

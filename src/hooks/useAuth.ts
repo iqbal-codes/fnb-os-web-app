@@ -1,9 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api/client";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/lib/api/client';
 
 export const authKeys = {
-  all: ["auth"] as const,
-  me: () => [...authKeys.all, "me"] as const,
+  all: ['auth'] as const,
+  me: () => [...authKeys.all, 'me'] as const,
 };
 
 export function useCurrentUser() {
@@ -54,4 +54,3 @@ export function useSendMagicLink() {
     mutationFn: (email: string) => api.auth.sendMagicLink(email),
   });
 }
-

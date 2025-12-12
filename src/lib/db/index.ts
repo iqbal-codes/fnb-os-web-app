@@ -1,4 +1,4 @@
-import Dexie, { type EntityTable } from "dexie";
+import Dexie, { type EntityTable } from 'dexie';
 
 // Types for offline storage
 interface OfflineOrder {
@@ -25,7 +25,7 @@ interface OfflineInventoryLog {
   id: string;
   inventory_id: string;
   ingredient_id: string;
-  change_type: "purchase" | "usage" | "adjustment" | "waste";
+  change_type: 'purchase' | 'usage' | 'adjustment' | 'waste';
   quantity: number;
   reason?: string;
   created_at: string;
@@ -62,22 +62,21 @@ interface SyncMetadata {
 
 // Dexie database class
 class SajiPlanDB extends Dexie {
-  offlineOrders!: EntityTable<OfflineOrder, "id">;
-  offlineInventoryLogs!: EntityTable<OfflineInventoryLog, "id">;
-  cachedMenus!: EntityTable<CachedMenu, "id">;
-  cachedIngredients!: EntityTable<CachedIngredient, "id">;
-  syncMetadata!: EntityTable<SyncMetadata, "id">;
+  offlineOrders!: EntityTable<OfflineOrder, 'id'>;
+  offlineInventoryLogs!: EntityTable<OfflineInventoryLog, 'id'>;
+  cachedMenus!: EntityTable<CachedMenu, 'id'>;
+  cachedIngredients!: EntityTable<CachedIngredient, 'id'>;
+  syncMetadata!: EntityTable<SyncMetadata, 'id'>;
 
   constructor() {
-    super("SajiPlanDB");
+    super('SajiPlanDB');
 
     this.version(1).stores({
-      offlineOrders: "id, business_id, created_at, synced",
-      offlineInventoryLogs:
-        "id, inventory_id, ingredient_id, created_at, synced",
-      cachedMenus: "id, business_id, category, is_active",
-      cachedIngredients: "id, business_id, category",
-      syncMetadata: "id, table_name",
+      offlineOrders: 'id, business_id, created_at, synced',
+      offlineInventoryLogs: 'id, inventory_id, ingredient_id, created_at, synced',
+      cachedMenus: 'id, business_id, category, is_active',
+      cachedIngredients: 'id, business_id, category',
+      syncMetadata: 'id, table_name',
     });
   }
 }
@@ -88,12 +87,12 @@ export const db = new SajiPlanDB();
 // Helper functions for offline operations
 export const offlineDB = {
   // Orders
-  async addOfflineOrder(order: Omit<OfflineOrder, "synced">) {
+  async addOfflineOrder(order: Omit<OfflineOrder, 'synced'>) {
     return db.offlineOrders.add({ ...order, synced: false });
   },
 
   async getUnsyncedOrders() {
-    return db.offlineOrders.where("synced").equals(0).toArray();
+    return db.offlineOrders.where('synced').equals(0).toArray();
   },
 
   async markOrderSynced(id: string) {
@@ -101,16 +100,16 @@ export const offlineDB = {
   },
 
   async clearSyncedOrders() {
-    return db.offlineOrders.where("synced").equals(1).delete();
+    return db.offlineOrders.where('synced').equals(1).delete();
   },
 
   // Inventory Logs
-  async addOfflineInventoryLog(log: Omit<OfflineInventoryLog, "synced">) {
+  async addOfflineInventoryLog(log: Omit<OfflineInventoryLog, 'synced'>) {
     return db.offlineInventoryLogs.add({ ...log, synced: false });
   },
 
   async getUnsyncedInventoryLogs() {
-    return db.offlineInventoryLogs.where("synced").equals(0).toArray();
+    return db.offlineInventoryLogs.where('synced').equals(0).toArray();
   },
 
   async markInventoryLogSynced(id: string) {
@@ -124,7 +123,7 @@ export const offlineDB = {
 
   async getCachedMenus(businessId: string) {
     return db.cachedMenus
-      .where("business_id")
+      .where('business_id')
       .equals(businessId)
       .and((menu) => menu.is_active)
       .toArray();
@@ -132,7 +131,7 @@ export const offlineDB = {
 
   async getCachedMenusByCategory(businessId: string, category: string) {
     return db.cachedMenus
-      .where(["business_id", "category"])
+      .where(['business_id', 'category'])
       .equals([businessId, category])
       .toArray();
   },
@@ -143,10 +142,7 @@ export const offlineDB = {
   },
 
   async getCachedIngredients(businessId: string) {
-    return db.cachedIngredients
-      .where("business_id")
-      .equals(businessId)
-      .toArray();
+    return db.cachedIngredients.where('business_id').equals(businessId).toArray();
   },
 
   // Sync Metadata
@@ -174,4 +170,3 @@ export const offlineDB = {
 };
 
 export type { OfflineOrder, OfflineInventoryLog, CachedMenu, CachedIngredient };
-

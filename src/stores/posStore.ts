@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface CartItem {
   id: string;
@@ -13,9 +13,9 @@ interface CartItem {
 interface POSState {
   items: CartItem[];
   discount: number;
-  discountType: "fixed" | "percentage";
+  discountType: 'fixed' | 'percentage';
   tax: number;
-  paymentType: "cash" | "qris" | "transfer" | "ewallet" | "card";
+  paymentType: 'cash' | 'qris' | 'transfer' | 'ewallet' | 'card';
   customerNotes: string;
 
   // Computed
@@ -29,24 +29,22 @@ interface POSState {
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   updateItemNotes: (id: string, notes: string) => void;
-  setDiscount: (amount: number, type: "fixed" | "percentage") => void;
-  setPaymentType: (type: POSState["paymentType"]) => void;
+  setDiscount: (amount: number, type: 'fixed' | 'percentage') => void;
+  setPaymentType: (type: POSState['paymentType']) => void;
   setCustomerNotes: (notes: string) => void;
   clearCart: () => void;
 }
 
-const generateId = () =>
-  `cart_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+const generateId = () => `cart_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 
 const calculateTotals = (
   items: CartItem[],
   discount: number,
-  discountType: "fixed" | "percentage",
-  tax: number
+  discountType: 'fixed' | 'percentage',
+  tax: number,
 ) => {
   const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
-  const discountAmount =
-    discountType === "percentage" ? (subtotal * discount) / 100 : discount;
+  const discountAmount = discountType === 'percentage' ? (subtotal * discount) / 100 : discount;
   const afterDiscount = subtotal - discountAmount;
   const taxAmount = (afterDiscount * tax) / 100;
   const total = afterDiscount + taxAmount;
@@ -57,10 +55,10 @@ const calculateTotals = (
 export const usePOSStore = create<POSState>((set) => ({
   items: [],
   discount: 0,
-  discountType: "fixed",
+  discountType: 'fixed',
   tax: 0, // Can be set based on business settings
-  paymentType: "cash",
-  customerNotes: "",
+  paymentType: 'cash',
+  customerNotes: '',
 
   // Computed values (initially 0)
   subtotal: 0,
@@ -71,9 +69,7 @@ export const usePOSStore = create<POSState>((set) => ({
   addItem: (menu) => {
     set((state) => {
       // Check if item already exists
-      const existingIndex = state.items.findIndex(
-        (item) => item.menu_id === menu.id
-      );
+      const existingIndex = state.items.findIndex((item) => item.menu_id === menu.id);
 
       let newItems: CartItem[];
 
@@ -86,7 +82,7 @@ export const usePOSStore = create<POSState>((set) => ({
                 quantity: item.quantity + 1,
                 subtotal: (item.quantity + 1) * item.unit_price,
               }
-            : item
+            : item,
         );
       } else {
         // Add new item
@@ -103,12 +99,7 @@ export const usePOSStore = create<POSState>((set) => ({
         ];
       }
 
-      const totals = calculateTotals(
-        newItems,
-        state.discount,
-        state.discountType,
-        state.tax
-      );
+      const totals = calculateTotals(newItems, state.discount, state.discountType, state.tax);
 
       return { items: newItems, ...totals };
     });
@@ -117,12 +108,7 @@ export const usePOSStore = create<POSState>((set) => ({
   removeItem: (id) => {
     set((state) => {
       const newItems = state.items.filter((item) => item.id !== id);
-      const totals = calculateTotals(
-        newItems,
-        state.discount,
-        state.discountType,
-        state.tax
-      );
+      const totals = calculateTotals(newItems, state.discount, state.discountType, state.tax);
       return { items: newItems, ...totals };
     });
   },
@@ -131,27 +117,15 @@ export const usePOSStore = create<POSState>((set) => ({
     set((state) => {
       if (quantity <= 0) {
         const newItems = state.items.filter((item) => item.id !== id);
-        const totals = calculateTotals(
-          newItems,
-          state.discount,
-          state.discountType,
-          state.tax
-        );
+        const totals = calculateTotals(newItems, state.discount, state.discountType, state.tax);
         return { items: newItems, ...totals };
       }
 
       const newItems = state.items.map((item) =>
-        item.id === id
-          ? { ...item, quantity, subtotal: quantity * item.unit_price }
-          : item
+        item.id === id ? { ...item, quantity, subtotal: quantity * item.unit_price } : item,
       );
 
-      const totals = calculateTotals(
-        newItems,
-        state.discount,
-        state.discountType,
-        state.tax
-      );
+      const totals = calculateTotals(newItems, state.discount, state.discountType, state.tax);
 
       return { items: newItems, ...totals };
     });
@@ -159,9 +133,7 @@ export const usePOSStore = create<POSState>((set) => ({
 
   updateItemNotes: (id, notes) => {
     set((state) => ({
-      items: state.items.map((item) =>
-        item.id === id ? { ...item, notes } : item
-      ),
+      items: state.items.map((item) => (item.id === id ? { ...item, notes } : item)),
     }));
   },
 
@@ -180,13 +152,12 @@ export const usePOSStore = create<POSState>((set) => ({
     set({
       items: [],
       discount: 0,
-      discountType: "fixed",
-      paymentType: "cash",
-      customerNotes: "",
+      discountType: 'fixed',
+      paymentType: 'cash',
+      customerNotes: '',
       subtotal: 0,
       discountAmount: 0,
       taxAmount: 0,
       total: 0,
     }),
 }));
-

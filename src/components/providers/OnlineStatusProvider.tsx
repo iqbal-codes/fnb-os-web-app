@@ -1,13 +1,7 @@
-"use client";
+'use client';
 
-import {
-  useEffect,
-  useState,
-  createContext,
-  useContext,
-  type ReactNode,
-} from "react";
-import { useAuthStore } from "@/stores/authStore";
+import { useEffect, useState, createContext, useContext, type ReactNode } from 'react';
+import { useAuthStore } from '@/stores/authStore';
 
 interface OnlineStatusContextValue {
   isOnline: boolean;
@@ -23,7 +17,7 @@ const OnlineStatusContext = createContext<OnlineStatusContextValue>({
 
 export function OnlineStatusProvider({ children }: { children: ReactNode }) {
   const [isOnline, setIsOnline] = useState(() =>
-    typeof navigator !== "undefined" ? navigator.onLine : true
+    typeof navigator !== 'undefined' ? navigator.onLine : true,
   );
   const [wasOffline, setWasOffline] = useState(false);
   const [pendingSyncCount] = useState(0);
@@ -43,19 +37,17 @@ export function OnlineStatusProvider({ children }: { children: ReactNode }) {
       setStoreOnline(false);
     };
 
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
 
     return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
   }, [setStoreOnline]);
 
   return (
-    <OnlineStatusContext.Provider
-      value={{ isOnline, wasOffline, pendingSyncCount }}
-    >
+    <OnlineStatusContext.Provider value={{ isOnline, wasOffline, pendingSyncCount }}>
       {children}
     </OnlineStatusContext.Provider>
   );
@@ -64,4 +56,3 @@ export function OnlineStatusProvider({ children }: { children: ReactNode }) {
 export function useOnlineStatus() {
   return useContext(OnlineStatusContext);
 }
-

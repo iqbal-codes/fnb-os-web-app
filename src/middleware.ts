@@ -1,17 +1,14 @@
-import createMiddleware from "next-intl/middleware";
-import { routing } from "./i18n/routing";
-import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
+import createMiddleware from 'next-intl/middleware';
+import { routing } from './i18n/routing';
+import { NextRequest, NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
 
 // Create the i18n middleware
 const intlMiddleware = createMiddleware(routing);
 
 export async function middleware(request: NextRequest) {
   // Skip API and auth callback routes from i18n processing
-  if (
-    request.nextUrl.pathname.startsWith("/api") ||
-    request.nextUrl.pathname.startsWith("/auth")
-  ) {
+  if (request.nextUrl.pathname.startsWith('/api') || request.nextUrl.pathname.startsWith('/auth')) {
     return NextResponse.next();
   }
 
@@ -29,11 +26,11 @@ export async function middleware(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
+            response.cookies.set(name, value, options),
           );
         },
       },
-    }
+    },
   );
 
   // Refresh session if needed
@@ -47,6 +44,5 @@ export const config = {
   // - API routes
   // - Static files
   // - _next
-  matcher: ["/((?!api|_next|_vercel|.*\\..*).*)"],
+  matcher: ['/((?!api|_next|_vercel|.*\\..*).*)'],
 };
-

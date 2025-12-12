@@ -1,15 +1,14 @@
-import type { Metadata } from "next";
-import { HelpCenter } from "@/components/settings/HelpCenter";
+import type { Metadata } from 'next';
+import { HelpCenter } from '@/components/settings/HelpCenter';
 
 export const metadata: Metadata = {
-  title: "Bantuan",
+  title: 'Bantuan',
 };
 
 export default function HelpPage() {
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className='animate-fade-in space-y-6'>
       <HelpCenter />
     </div>
   );
 }
-

@@ -1,17 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
-import { generateJSON, type PriceSuggestion } from "@/lib/ai/gemini";
+import { NextRequest, NextResponse } from 'next/server';
+import { generateJSON, type PriceSuggestion } from '@/lib/ai/gemini';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { ingredient_name, category, current_price, market_unit, location } =
-      body;
+    const { ingredient_name, category, current_price, market_unit, location } = body;
 
     if (!ingredient_name) {
-      return NextResponse.json(
-        { error: "ingredient_name is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'ingredient_name is required' }, { status: 400 });
     }
 
     const prompt = `
@@ -19,14 +15,10 @@ Kamu adalah ahli harga bahan makanan dan minuman di Indonesia, khususnya untuk b
 
 Berikan estimasi harga untuk bahan berikut:
 - Nama Bahan: ${ingredient_name}
-- Kategori: ${category || "umum"}
-- Satuan: ${market_unit || "kg"}
-- Lokasi: ${location || "Indonesia"}
-${
-  current_price
-    ? `- Harga saat ini: Rp ${current_price.toLocaleString("id-ID")}`
-    : ""
-}
+- Kategori: ${category || 'umum'}
+- Satuan: ${market_unit || 'kg'}
+- Lokasi: ${location || 'Indonesia'}
+${current_price ? `- Harga saat ini: Rp ${current_price.toLocaleString('id-ID')}` : ''}
 
 Berikan respons dalam format JSON:
 {
@@ -46,11 +38,7 @@ Gunakan harga pasar Indonesia yang realistis untuk tahun 2024.
 
     return NextResponse.json({ suggestion });
   } catch (error) {
-    console.error("AI price suggestion error:", error);
-    return NextResponse.json(
-      { error: "Failed to get AI suggestion" },
-      { status: 500 }
-    );
+    console.error('AI price suggestion error:', error);
+    return NextResponse.json({ error: 'Failed to get AI suggestion' }, { status: 500 });
   }
 }
-

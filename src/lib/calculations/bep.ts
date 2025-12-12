@@ -35,16 +35,13 @@ export interface SalesProjection {
 export function calculateBEP(
   fixedCostsMonthly: number, // Monthly OPEX
   variableCostPerUnit: number, // COGS per item
-  averageSellingPrice: number
+  averageSellingPrice: number,
 ): BEPResult {
   const contributionMargin = averageSellingPrice - variableCostPerUnit;
   const contributionMarginRatio =
     averageSellingPrice > 0 ? contributionMargin / averageSellingPrice : 0;
 
-  const bepUnits =
-    contributionMargin > 0
-      ? Math.ceil(fixedCostsMonthly / contributionMargin)
-      : 0;
+  const bepUnits = contributionMargin > 0 ? Math.ceil(fixedCostsMonthly / contributionMargin) : 0;
 
   const bepUnitsDaily = Math.ceil(bepUnits / 30);
   const bepRevenue = bepUnits * averageSellingPrice;
@@ -70,16 +67,14 @@ export function calculateROI(
   totalInvestment: number, // Initial capital
   monthlyRevenue: number,
   monthlyCOGS: number,
-  monthlyOPEX: number
+  monthlyOPEX: number,
 ): ROIResult {
   const monthlyProfit = monthlyRevenue - monthlyCOGS - monthlyOPEX;
 
-  const paybackMonths =
-    monthlyProfit > 0 ? Math.ceil(totalInvestment / monthlyProfit) : 0;
+  const paybackMonths = monthlyProfit > 0 ? Math.ceil(totalInvestment / monthlyProfit) : 0;
 
   const yearOneProfit = monthlyProfit * 12;
-  const annualROI =
-    totalInvestment > 0 ? (yearOneProfit / totalInvestment) * 100 : 0;
+  const annualROI = totalInvestment > 0 ? (yearOneProfit / totalInvestment) * 100 : 0;
 
   return {
     totalInvestment,
@@ -98,7 +93,7 @@ export function generateSalesProjection(
   monthlyRevenue: number,
   monthlyCosts: number, // COGS + OPEX
   months: number = 12,
-  growthRatePercent: number = 0 // Monthly growth rate
+  growthRatePercent: number = 0, // Monthly growth rate
 ): SalesProjection[] {
   const projections: SalesProjection[] = [];
   let cumulativeProfit = 0;
@@ -128,7 +123,7 @@ export function generateSalesProjection(
 export function calculateTargetSales(
   targetProfit: number,
   fixedCosts: number,
-  contributionMargin: number
+  contributionMargin: number,
 ): number {
   if (contributionMargin <= 0) return 0;
   return Math.ceil((fixedCosts + targetProfit) / contributionMargin);
@@ -138,11 +133,10 @@ export function calculateTargetSales(
  * Format currency for display
  */
 export function formatIDR(amount: number): string {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
 }
-

@@ -1,50 +1,47 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
     const { searchParams } = new URL(request.url);
 
-    const businessId = searchParams.get("business_id");
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "20");
-    const paymentType = searchParams.get("payment_type");
-    const status = searchParams.get("status");
-    const startDate = searchParams.get("start_date");
-    const endDate = searchParams.get("end_date");
+    const businessId = searchParams.get('business_id');
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const paymentType = searchParams.get('payment_type');
+    const status = searchParams.get('status');
+    const startDate = searchParams.get('start_date');
+    const endDate = searchParams.get('end_date');
 
     if (!businessId) {
-      return NextResponse.json(
-        { error: "business_id is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'business_id is required' }, { status: 400 });
     }
 
     let query = supabase
-      .from("orders")
-      .select("*", { count: "exact" })
-      .eq("business_id", businessId)
-      .order("created_at", { ascending: false })
+      .from('orders')
+      .select('*', { count: 'exact' })
+      .eq('business_id', businessId)
+      .order('created_at', { ascending: false })
       .range((page - 1) * limit, page * limit - 1);
 
     if (paymentType) {
-      query = query.eq("payment_type", paymentType);
+      query = query.eq('payment_type', paymentType);
     }
     if (status) {
-      query = query.eq("payment_status", status);
+      query = query.eq('payment_status', status);
     }
     if (startDate) {
-      query = query.gte("created_at", startDate);
+      query = query.gte('created_at', startDate);
     }
     if (endDate) {
-      query = query.lte("created_at", endDate);
+      query = query.lte('created_at', endDate);
     }
 
     const { data, error, count } = await query;
 
     if (error) {
-      console.error("Error fetching orders:", error);
+      console.error('Error fetching orders:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
@@ -58,8 +55,7 @@ export async function GET(request: NextRequest) {
       tax: order.tax_amount || 0,
       total: order.total,
       payment_type: order.payment_type,
-      status:
-        order.payment_status === "paid" ? "completed" : order.payment_status,
+      status: order.payment_status === 'paid' ? 'completed' : order.payment_status,
       notes: order.notes,
       created_at: order.created_at,
       completed_at: order.completed_at,
@@ -72,11 +68,8 @@ export async function GET(request: NextRequest) {
       totalPages: Math.ceil((count || 0) / limit),
     });
   } catch (error) {
-    console.error("Sales API error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error('Sales API error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -98,10 +91,7 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!business_id || !items || items.length === 0) {
-      return NextResponse.json(
-        { error: "business_id and items are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'business_id and items are required' }, { status: 400 });
     }
 
     // Generate order number
@@ -109,7 +99,7 @@ export async function POST(request: NextRequest) {
 
     // Create order using existing orders table
     const { data: order, error } = await supabase
-      .from("orders")
+      .from('orders')
       .insert({
         business_id,
         order_number: orderNumber,
@@ -118,8 +108,8 @@ export async function POST(request: NextRequest) {
         discount_amount: discount,
         tax_amount: tax,
         total,
-        payment_type: payment_type || "cash",
-        payment_status: "paid", // Default to paid for POS
+        payment_type: payment_type || 'cash',
+        payment_status: 'paid', // Default to paid for POS
         notes,
         completed_at: new Date().toISOString(),
       })
@@ -127,7 +117,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error("Error creating order:", error);
+      console.error('Error creating order:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
@@ -136,11 +126,7 @@ export async function POST(request: NextRequest) {
       order_number: orderNumber,
     });
   } catch (error) {
-    console.error("Sales POST error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error('Sales POST error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-

@@ -1,10 +1,10 @@
-import axios, { AxiosError } from "axios";
+import axios, { AxiosError } from 'axios';
 
 // Create axios instance with default config
 const apiClient = axios.create({
-  baseURL: "",
+  baseURL: '',
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
   withCredentials: true,
 });
@@ -13,16 +13,18 @@ const apiClient = axios.create({
 apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError<{ error?: string }>) => {
-    const message =
-      error.response?.data?.error || error.message || "Request failed";
+    const message = error.response?.data?.error || error.message || 'Request failed';
     return Promise.reject(new ApiError(error.response?.status || 500, message));
-  }
+  },
 );
 
 class ApiError extends Error {
-  constructor(public statusCode: number, message: string) {
+  constructor(
+    public statusCode: number,
+    message: string,
+  ) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
   }
 }
 
@@ -30,25 +32,18 @@ class ApiError extends Error {
 export const api = {
   // Auth
   auth: {
-    getMe: () =>
-      apiClient
-        .get<{ user: UserResponse | null }>("/api/auth/me")
-        .then((r) => r.data),
+    getMe: () => apiClient.get<{ user: UserResponse | null }>('/api/auth/me').then((r) => r.data),
     login: (data: LoginRequest) =>
-      apiClient
-        .post<LoginResponse>("/api/auth/login", data)
-        .then((r) => r.data),
+      apiClient.post<LoginResponse>('/api/auth/login', data).then((r) => r.data),
     register: (data: RegisterRequest) =>
-      apiClient
-        .post<RegisterResponse>("/api/auth/register", data)
-        .then((r) => r.data),
+      apiClient.post<RegisterResponse>('/api/auth/register', data).then((r) => r.data),
     logout: () =>
       apiClient
-        .post<{ success: boolean; redirect: string }>("/api/auth/logout")
+        .post<{ success: boolean; redirect: string }>('/api/auth/logout')
         .then((r) => r.data),
     sendMagicLink: (email: string) =>
       apiClient
-        .post<{ success: boolean; message: string }>("/api/auth/magic-link", {
+        .post<{ success: boolean; message: string }>('/api/auth/magic-link', {
           email,
         })
         .then((r) => r.data),
@@ -57,25 +52,17 @@ export const api = {
   // Business
   business: {
     get: () =>
-      apiClient
-        .get<{ business: BusinessResponse | null }>("/api/business")
-        .then((r) => r.data),
+      apiClient.get<{ business: BusinessResponse | null }>('/api/business').then((r) => r.data),
     create: (data: CreateBusinessRequest) =>
-      apiClient
-        .post<{ business: BusinessResponse }>("/api/business", data)
-        .then((r) => r.data),
+      apiClient.post<{ business: BusinessResponse }>('/api/business', data).then((r) => r.data),
     update: (data: UpdateBusinessRequest) =>
-      apiClient
-        .put<{ business: BusinessResponse }>("/api/business", data)
-        .then((r) => r.data),
+      apiClient.put<{ business: BusinessResponse }>('/api/business', data).then((r) => r.data),
   },
 
   // Dashboard
   dashboard: {
     getStats: () =>
-      apiClient
-        .get<DashboardStatsResponse>("/api/dashboard/stats")
-        .then((r) => r.data),
+      apiClient.get<DashboardStatsResponse>('/api/dashboard/stats').then((r) => r.data),
   },
 };
 
@@ -151,4 +138,3 @@ export interface UpdateBusinessRequest {
 }
 
 export { ApiError, apiClient };
-

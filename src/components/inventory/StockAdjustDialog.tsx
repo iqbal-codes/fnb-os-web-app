@@ -1,35 +1,30 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { Package, Plus, Minus, Trash2 } from "lucide-react";
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { Package, Plus, Minus, Trash2 } from 'lucide-react';
 
-import { useAddInventoryLog } from "@/hooks/useInventory";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useAddInventoryLog } from '@/hooks/useInventory';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { toast } from "sonner";
-import type { InventoryWithIngredient } from "@/hooks/useInventory";
+} from '@/components/ui/select';
+import { toast } from 'sonner';
+import type { InventoryWithIngredient } from '@/hooks/useInventory';
 
 interface StockAdjustDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   item: InventoryWithIngredient | null;
-  defaultType?: "purchase" | "usage" | "adjustment" | "waste";
+  defaultType?: 'purchase' | 'usage' | 'adjustment' | 'waste';
 }
 
 interface FormData {
@@ -39,28 +34,28 @@ interface FormData {
 
 const changeTypes = [
   {
-    value: "purchase",
-    label: "Purchase (Add)",
+    value: 'purchase',
+    label: 'Purchase (Add)',
     icon: Plus,
-    color: "text-green-600",
+    color: 'text-green-600',
   },
   {
-    value: "usage",
-    label: "Usage (Subtract)",
+    value: 'usage',
+    label: 'Usage (Subtract)',
     icon: Minus,
-    color: "text-blue-600",
+    color: 'text-blue-600',
   },
   {
-    value: "adjustment",
-    label: "Adjustment",
+    value: 'adjustment',
+    label: 'Adjustment',
     icon: Package,
-    color: "text-yellow-600",
+    color: 'text-yellow-600',
   },
   {
-    value: "waste",
-    label: "Waste/Spoilage",
+    value: 'waste',
+    label: 'Waste/Spoilage',
     icon: Trash2,
-    color: "text-red-600",
+    color: 'text-red-600',
   },
 ] as const;
 
@@ -68,7 +63,7 @@ export function StockAdjustDialog({
   open,
   onOpenChange,
   item,
-  defaultType = "adjustment",
+  defaultType = 'adjustment',
 }: StockAdjustDialogProps) {
   const [changeType, setChangeType] = useState<typeof defaultType>(defaultType);
   const { mutate: addLog, isPending } = useAddInventoryLog();
@@ -81,14 +76,14 @@ export function StockAdjustDialog({
   } = useForm<FormData>({
     defaultValues: {
       quantity: 1,
-      reason: "",
+      reason: '',
     },
   });
 
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen) {
       setChangeType(defaultType);
-      reset({ quantity: 1, reason: "" });
+      reset({ quantity: 1, reason: '' });
     }
     onOpenChange(newOpen);
   };
@@ -106,22 +101,22 @@ export function StockAdjustDialog({
       {
         onSuccess: ({ newStock }) => {
           const actionLabel =
-            changeType === "purchase"
-              ? "added"
-              : changeType === "usage"
-              ? "used"
-              : changeType === "waste"
-              ? "recorded waste"
-              : "adjusted";
+            changeType === 'purchase'
+              ? 'added'
+              : changeType === 'usage'
+                ? 'used'
+                : changeType === 'waste'
+                  ? 'recorded waste'
+                  : 'adjusted';
           toast.success(`Stock ${actionLabel}`, {
             description: `${item.ingredient?.name}: ${newStock} ${item.unit}`,
           });
           handleOpenChange(false);
         },
         onError: () => {
-          toast.error("Failed to update stock");
+          toast.error('Failed to update stock');
         },
-      }
+      },
     );
   };
 
@@ -130,30 +125,27 @@ export function StockAdjustDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className='max-w-sm'>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className='flex items-center gap-2'>
             <TypeIcon className={`h-5 w-5 ${selectedType?.color}`} />
             Adjust Stock
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
           {item && (
-            <div className="p-3 rounded-lg bg-muted/50">
-              <p className="font-medium">{item.ingredient?.name}</p>
-              <p className="text-sm text-muted-foreground">
+            <div className='bg-muted/50 rounded-lg p-3'>
+              <p className='font-medium'>{item.ingredient?.name}</p>
+              <p className='text-muted-foreground text-sm'>
                 Current: {item.current_stock} {item.unit}
               </p>
             </div>
           )}
 
-          <div className="space-y-2">
+          <div className='space-y-2'>
             <Label>Type</Label>
-            <Select
-              value={changeType}
-              onValueChange={(v) => setChangeType(v as typeof changeType)}
-            >
+            <Select value={changeType} onValueChange={(v) => setChangeType(v as typeof changeType)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -162,7 +154,7 @@ export function StockAdjustDialog({
                   const Icon = type.icon;
                   return (
                     <SelectItem key={type.value} value={type.value}>
-                      <div className="flex items-center gap-2">
+                      <div className='flex items-center gap-2'>
                         <Icon className={`h-4 w-4 ${type.color}`} />
                         {type.label}
                       </div>
@@ -173,47 +165,45 @@ export function StockAdjustDialog({
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="quantity">Quantity ({item?.unit || "units"})</Label>
+          <div className='space-y-2'>
+            <Label htmlFor='quantity'>Quantity ({item?.unit || 'units'})</Label>
             <Input
-              id="quantity"
-              type="number"
-              min="0.01"
-              step="0.01"
-              {...register("quantity", {
-                required: "Required",
-                min: { value: 0.01, message: "Must be > 0" },
+              id='quantity'
+              type='number'
+              min='0.01'
+              step='0.01'
+              {...register('quantity', {
+                required: 'Required',
+                min: { value: 0.01, message: 'Must be > 0' },
                 valueAsNumber: true,
               })}
             />
             {errors.quantity && (
-              <p className="text-xs text-destructive">
-                {errors.quantity.message}
-              </p>
+              <p className='text-destructive text-xs'>{errors.quantity.message}</p>
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="reason">Reason (optional)</Label>
+          <div className='space-y-2'>
+            <Label htmlFor='reason'>Reason (optional)</Label>
             <Textarea
-              id="reason"
-              placeholder="e.g., Monthly restock..."
+              id='reason'
+              placeholder='e.g., Monthly restock...'
               rows={2}
-              {...register("reason")}
+              {...register('reason')}
             />
           </div>
 
-          <div className="flex gap-2">
+          <div className='flex gap-2'>
             <Button
-              type="button"
-              variant="outline"
-              className="flex-1"
+              type='button'
+              variant='outline'
+              className='flex-1'
               onClick={() => handleOpenChange(false)}
             >
               Cancel
             </Button>
-            <Button type="submit" className="flex-1" disabled={isPending}>
-              {isPending ? "Saving..." : "Save"}
+            <Button type='submit' className='flex-1' disabled={isPending}>
+              {isPending ? 'Saving...' : 'Save'}
             </Button>
           </div>
         </form>
@@ -221,4 +211,3 @@ export function StockAdjustDialog({
     </Dialog>
   );
 }
-

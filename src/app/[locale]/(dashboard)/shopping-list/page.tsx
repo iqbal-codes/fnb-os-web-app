@@ -1,15 +1,14 @@
-import type { Metadata } from "next";
-import { ShoppingListGenerator } from "@/components/planning/ShoppingListGenerator";
+import type { Metadata } from 'next';
+import { ShoppingListGenerator } from '@/components/planning/ShoppingListGenerator';
 
 export const metadata: Metadata = {
-  title: "Daftar Belanja",
+  title: 'Daftar Belanja',
 };
 
 export default function ShoppingListPage() {
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className='animate-fade-in space-y-6'>
       <ShoppingListGenerator />
     </div>
   );
 }
-

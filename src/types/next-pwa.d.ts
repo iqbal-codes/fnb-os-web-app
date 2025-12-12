@@ -1,14 +1,9 @@
-declare module "next-pwa" {
-  import type { NextConfig } from "next";
+declare module 'next-pwa' {
+  import type { NextConfig } from 'next';
 
   interface RuntimeCachingEntry {
     urlPattern: RegExp | string;
-    handler:
-      | "CacheFirst"
-      | "CacheOnly"
-      | "NetworkFirst"
-      | "NetworkOnly"
-      | "StaleWhileRevalidate";
+    handler: 'CacheFirst' | 'CacheOnly' | 'NetworkFirst' | 'NetworkOnly' | 'StaleWhileRevalidate';
     options?: {
       cacheName?: string;
       expiration?: {
@@ -42,10 +37,7 @@ declare module "next-pwa" {
     };
   }
 
-  function withPWAInit(
-    config: PWAConfig
-  ): (nextConfig: NextConfig) => NextConfig;
+  function withPWAInit(config: PWAConfig): (nextConfig: NextConfig) => NextConfig;
 
   export default withPWAInit;
 }
-

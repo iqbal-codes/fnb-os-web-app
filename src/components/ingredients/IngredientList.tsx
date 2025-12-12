@@ -1,50 +1,33 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import {
-  Plus,
-  Search,
-  MoreVertical,
-  Pencil,
-  Trash2,
-  Package,
-  Loader2,
-} from "lucide-react";
-import { toast } from "sonner";
+import { useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Plus, Search, MoreVertical, Pencil, Trash2, Package, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
-import {
-  useIngredients,
-  useCreateIngredient,
-  useDeleteIngredient,
-} from "@/hooks/useIngredients";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useIngredients, useCreateIngredient, useDeleteIngredient } from '@/hooks/useIngredients';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -54,53 +37,50 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { getUnitOptions } from "@/lib/utils/units";
-import type { Ingredient } from "@/types";
+} from '@/components/ui/alert-dialog';
+import { getUnitOptions } from '@/lib/utils/units';
+import type { Ingredient } from '@/types';
 
 const INGREDIENT_CATEGORIES = [
-  { value: "protein", label: "Protein" },
-  { value: "vegetable", label: "Sayuran" },
-  { value: "dairy", label: "Dairy" },
-  { value: "dry_goods", label: "Bahan Kering" },
-  { value: "beverage", label: "Minuman" },
-  { value: "spices", label: "Bumbu" },
-  { value: "packaging", label: "Packaging" },
-  { value: "other", label: "Lainnya" },
+  { value: 'protein', label: 'Protein' },
+  { value: 'vegetable', label: 'Sayuran' },
+  { value: 'dairy', label: 'Dairy' },
+  { value: 'dry_goods', label: 'Bahan Kering' },
+  { value: 'beverage', label: 'Minuman' },
+  { value: 'spices', label: 'Bumbu' },
+  { value: 'packaging', label: 'Packaging' },
+  { value: 'other', label: 'Lainnya' },
 ];
 
 const ingredientSchema = z.object({
-  name: z.string().min(1, "Nama bahan wajib diisi"),
-  category: z.string().min(1, "Kategori wajib diisi"),
-  market_unit: z.string().min(1, "Satuan beli wajib diisi"),
+  name: z.string().min(1, 'Nama bahan wajib diisi'),
+  category: z.string().min(1, 'Kategori wajib diisi'),
+  market_unit: z.string().min(1, 'Satuan beli wajib diisi'),
   market_qty: z.preprocess(
     (val) => Number(val),
-    z.number().min(0.001, "Kuantitas harus lebih dari 0")
+    z.number().min(0.001, 'Kuantitas harus lebih dari 0'),
   ),
   price_per_market_unit: z.preprocess(
     (val) => Number(val),
-    z.number().min(0, "Harga harus 0 atau lebih")
+    z.number().min(0, 'Harga harus 0 atau lebih'),
   ),
   recipe_unit: z.string().optional(),
-  conversion_factor: z.preprocess(
-    (val) => (val ? Number(val) : undefined),
-    z.number().optional()
-  ),
+  conversion_factor: z.preprocess((val) => (val ? Number(val) : undefined), z.number().optional()),
 });
 
 type IngredientFormData = z.infer<typeof ingredientSchema>;
 
 function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
 }
 
 export function IngredientList() {
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -113,7 +93,7 @@ export function IngredientList() {
   const filteredIngredients = ingredients.filter(
     (ing) =>
       ing.name.toLowerCase().includes(search.toLowerCase()) ||
-      ing.category?.toLowerCase().includes(search.toLowerCase())
+      ing.category?.toLowerCase().includes(search.toLowerCase()),
   );
 
   const handleDelete = async () => {
@@ -121,19 +101,18 @@ export function IngredientList() {
 
     try {
       await deleteIngredient.mutateAsync(deleteId);
-      toast.success("Bahan berhasil dihapus");
+      toast.success('Bahan berhasil dihapus');
       setDeleteId(null);
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Gagal menghapus";
+      const message = error instanceof Error ? error.message : 'Gagal menghapus';
       toast.error(message);
     }
   };
 
   if (error) {
     return (
-      <Card className="border-destructive/50">
-        <CardContent className="p-6 text-center text-destructive">
+      <Card className='border-destructive/50'>
+        <CardContent className='text-destructive p-6 text-center'>
           Gagal memuat bahan. Silakan coba lagi.
         </CardContent>
       </Card>
@@ -141,35 +120,35 @@ export function IngredientList() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       {/* Search */}
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <div className='flex gap-2'>
+        <div className='relative flex-1'>
+          <Search className='text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2' />
           <Input
-            placeholder="Cari bahan..."
-            className="pl-10"
+            placeholder='Cari bahan...'
+            className='pl-10'
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
         <Button onClick={() => setIsDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className='mr-2 h-4 w-4' />
           Tambah
         </Button>
       </div>
 
       {/* Loading State */}
       {isLoading && (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className='grid gap-3 sm:grid-cols-2'>
           {[1, 2, 3, 4].map((i) => (
             <Card key={i}>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <Skeleton className="h-10 w-10 rounded-lg" />
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-3 w-16" />
+              <CardContent className='p-4'>
+                <div className='flex items-center gap-3'>
+                  <Skeleton className='h-10 w-10 rounded-lg' />
+                  <div className='flex-1 space-y-2'>
+                    <Skeleton className='h-4 w-24' />
+                    <Skeleton className='h-3 w-16' />
                   </div>
                 </div>
               </CardContent>
@@ -180,16 +159,16 @@ export function IngredientList() {
 
       {/* Empty State */}
       {!isLoading && filteredIngredients.length === 0 && (
-        <Card className="border-dashed">
-          <CardContent className="p-8 text-center">
-            <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="font-medium mb-2">
-              {ingredients.length === 0 ? "Belum ada bahan" : "Tidak ditemukan"}
+        <Card className='border-dashed'>
+          <CardContent className='p-8 text-center'>
+            <Package className='text-muted-foreground mx-auto mb-4 h-12 w-12' />
+            <h3 className='mb-2 font-medium'>
+              {ingredients.length === 0 ? 'Belum ada bahan' : 'Tidak ditemukan'}
             </h3>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className='text-muted-foreground mb-4 text-sm'>
               {ingredients.length === 0
-                ? "Tambahkan bahan untuk membuat resep"
-                : "Coba kata kunci lain"}
+                ? 'Tambahkan bahan untuk membuat resep'
+                : 'Coba kata kunci lain'}
             </p>
           </CardContent>
         </Card>
@@ -197,7 +176,7 @@ export function IngredientList() {
 
       {/* Ingredient Grid */}
       {!isLoading && filteredIngredients.length > 0 && (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className='grid gap-3 sm:grid-cols-2'>
           {filteredIngredients.map((ingredient) => (
             <IngredientCard
               key={ingredient.id}
@@ -224,9 +203,9 @@ export function IngredientList() {
             <AlertDialogCancel>Batal</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
             >
-              {deleteIngredient.isPending ? "Menghapus..." : "Hapus"}
+              {deleteIngredient.isPending ? 'Menghapus...' : 'Hapus'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -247,47 +226,47 @@ function IngredientCard({
     ingredient.category;
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardContent className="p-4">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
-            <Package className="h-5 w-5 text-muted-foreground" />
+    <Card className='transition-shadow hover:shadow-md'>
+      <CardContent className='p-4'>
+        <div className='flex items-center gap-3'>
+          <div className='bg-muted flex h-10 w-10 shrink-0 items-center justify-center rounded-lg'>
+            <Package className='text-muted-foreground h-5 w-5' />
           </div>
 
-          <div className="flex-1 min-w-0">
-            <h3 className="font-medium truncate">{ingredient.name}</h3>
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="text-xs">
+          <div className='min-w-0 flex-1'>
+            <h3 className='truncate font-medium'>{ingredient.name}</h3>
+            <div className='flex items-center gap-2'>
+              <Badge variant='secondary' className='text-xs'>
                 {categoryLabel}
               </Badge>
-              <span className="text-xs text-muted-foreground">
+              <span className='text-muted-foreground text-xs'>
                 {ingredient.market_qty} {ingredient.market_unit}
               </span>
             </div>
           </div>
 
-          <div className="text-right shrink-0">
-            <p className="font-medium text-sm">
+          <div className='shrink-0 text-right'>
+            <p className='text-sm font-medium'>
               {formatCurrency(ingredient.price_per_market_unit)}
             </p>
           </div>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="shrink-0">
-                <MoreVertical className="h-4 w-4" />
+              <Button variant='ghost' size='icon' className='shrink-0'>
+                <MoreVertical className='h-4 w-4' />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align='end'>
               <DropdownMenuItem>
-                <Pencil className="mr-2 h-4 w-4" />
+                <Pencil className='mr-2 h-4 w-4' />
                 Edit
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={onDelete}
-                className="text-destructive focus:text-destructive"
+                className='text-destructive focus:text-destructive'
               >
-                <Trash2 className="mr-2 h-4 w-4" />
+                <Trash2 className='mr-2 h-4 w-4' />
                 Hapus
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -317,9 +296,9 @@ function AddIngredientDialog({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(ingredientSchema) as any,
     defaultValues: {
-      name: "",
-      category: "",
-      market_unit: "kg",
+      name: '',
+      category: '',
+      market_unit: 'kg',
       market_qty: 1,
       price_per_market_unit: 0,
     },
@@ -328,12 +307,11 @@ function AddIngredientDialog({
   const onSubmit = async (data: IngredientFormData) => {
     try {
       await createIngredient.mutateAsync(data);
-      toast.success("Bahan berhasil ditambahkan");
+      toast.success('Bahan berhasil ditambahkan');
       reset();
       onOpenChange(false);
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Gagal menambahkan";
+      const message = error instanceof Error ? error.message : 'Gagal menambahkan';
       toast.error(message);
     }
   };
@@ -345,28 +323,22 @@ function AddIngredientDialog({
           <DialogTitle>Tambah Bahan Baru</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Nama Bahan *</Label>
-            <Input
-              id="name"
-              placeholder="cth. Kopi Arabica"
-              {...register("name")}
-            />
-            {errors.name && (
-              <p className="text-sm text-destructive">{errors.name.message}</p>
-            )}
+        <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
+          <div className='space-y-2'>
+            <Label htmlFor='name'>Nama Bahan *</Label>
+            <Input id='name' placeholder='cth. Kopi Arabica' {...register('name')} />
+            {errors.name && <p className='text-destructive text-sm'>{errors.name.message}</p>}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="category">Kategori *</Label>
+          <div className='space-y-2'>
+            <Label htmlFor='category'>Kategori *</Label>
             <Controller
-              name="category"
+              name='category'
               control={control}
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Pilih kategori" />
+                    <SelectValue placeholder='Pilih kategori' />
                   </SelectTrigger>
                   <SelectContent>
                     {INGREDIENT_CATEGORIES.map((cat) => (
@@ -379,31 +351,24 @@ function AddIngredientDialog({
               )}
             />
             {errors.category && (
-              <p className="text-sm text-destructive">
-                {errors.category.message}
-              </p>
+              <p className='text-destructive text-sm'>{errors.category.message}</p>
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="market_qty">Kuantitas Beli</Label>
-              <Input
-                id="market_qty"
-                type="number"
-                step="0.01"
-                {...register("market_qty")}
-              />
+          <div className='grid grid-cols-2 gap-4'>
+            <div className='space-y-2'>
+              <Label htmlFor='market_qty'>Kuantitas Beli</Label>
+              <Input id='market_qty' type='number' step='0.01' {...register('market_qty')} />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="market_unit">Satuan Beli *</Label>
+            <div className='space-y-2'>
+              <Label htmlFor='market_unit'>Satuan Beli *</Label>
               <Controller
-                name="market_unit"
+                name='market_unit'
                 control={control}
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Pilih satuan" />
+                      <SelectValue placeholder='Pilih satuan' />
                     </SelectTrigger>
                     <SelectContent>
                       {getUnitOptions().map((unit) => (
@@ -418,37 +383,27 @@ function AddIngredientDialog({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="price_per_market_unit">
-              Harga per Satuan (IDR)
-            </Label>
+          <div className='space-y-2'>
+            <Label htmlFor='price_per_market_unit'>Harga per Satuan (IDR)</Label>
             <Input
-              id="price_per_market_unit"
-              type="number"
-              placeholder="50000"
-              {...register("price_per_market_unit")}
+              id='price_per_market_unit'
+              type='number'
+              placeholder='50000'
+              {...register('price_per_market_unit')}
             />
           </div>
 
-          <div className="flex gap-3 pt-2">
+          <div className='flex gap-3 pt-2'>
             <Button
-              type="button"
-              variant="outline"
-              className="flex-1"
+              type='button'
+              variant='outline'
+              className='flex-1'
               onClick={() => onOpenChange(false)}
             >
               Batal
             </Button>
-            <Button
-              type="submit"
-              className="flex-1"
-              disabled={createIngredient.isPending}
-            >
-              {createIngredient.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                "Tambah"
-              )}
+            <Button type='submit' className='flex-1' disabled={createIngredient.isPending}>
+              {createIngredient.isPending ? <Loader2 className='h-4 w-4 animate-spin' /> : 'Tambah'}
             </Button>
           </div>
         </form>
@@ -456,4 +411,3 @@ function AddIngredientDialog({
     </Dialog>
   );
 }
-

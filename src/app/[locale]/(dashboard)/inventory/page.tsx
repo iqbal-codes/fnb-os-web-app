@@ -1,20 +1,18 @@
-import type { Metadata } from "next";
-import { InventoryList } from "@/components/inventory/InventoryList";
-import { LowStockAlert } from "@/components/inventory/LowStockAlert";
+import type { Metadata } from 'next';
+import { InventoryList } from '@/components/inventory/InventoryList';
+import { LowStockAlert } from '@/components/inventory/LowStockAlert';
 
 export const metadata: Metadata = {
-  title: "Inventory",
+  title: 'Inventory',
 };
 
 export default function InventoryPage() {
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className='animate-fade-in space-y-6'>
       {/* Header */}
       <div>
-        <h1 className="text-xl font-semibold">Inventory</h1>
-        <p className="text-sm text-muted-foreground">
-          Track ingredient stock levels
-        </p>
+        <h1 className='text-xl font-semibold'>Inventory</h1>
+        <p className='text-muted-foreground text-sm'>Track ingredient stock levels</p>
       </div>
 
       {/* Low Stock Alert */}
@@ -25,4 +23,3 @@ export default function InventoryPage() {
     </div>
   );
 }
-

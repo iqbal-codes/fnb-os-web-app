@@ -17,15 +17,15 @@ export interface Business {
 }
 
 export type BusinessType =
-  | "coffee_shop"
-  | "restaurant"
-  | "food_stall"
-  | "bakery"
-  | "beverage_stall"
-  | "dessert_shop"
-  | "catering"
-  | "cloud_kitchen"
-  | "other";
+  | 'coffee_shop'
+  | 'restaurant'
+  | 'food_stall'
+  | 'bakery'
+  | 'beverage_stall'
+  | 'dessert_shop'
+  | 'catering'
+  | 'cloud_kitchen'
+  | 'other';
 
 // ============ Menu & Recipe Types ============
 export interface Menu {
@@ -78,14 +78,14 @@ export interface Ingredient {
 }
 
 export type IngredientCategory =
-  | "protein"
-  | "vegetable"
-  | "dairy"
-  | "dry_goods"
-  | "beverage"
-  | "spices"
-  | "packaging"
-  | "other";
+  | 'protein'
+  | 'vegetable'
+  | 'dairy'
+  | 'dry_goods'
+  | 'beverage'
+  | 'spices'
+  | 'packaging'
+  | 'other';
 
 export interface IngredientPriceHistory {
   id: string;
@@ -100,7 +100,7 @@ export interface OpexCategory {
   business_id: string;
   name: string;
   amount: number;
-  frequency: "daily" | "weekly" | "monthly" | "yearly";
+  frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
   is_variable: boolean;
   notes?: string;
 }
@@ -115,7 +115,7 @@ export interface Order {
   tax: number;
   total: number;
   payment_type: PaymentType;
-  payment_status: "pending" | "completed" | "cancelled";
+  payment_status: 'pending' | 'completed' | 'cancelled';
   notes?: string;
   created_at: string;
   synced_at?: string;
@@ -132,7 +132,7 @@ export interface OrderItem {
   notes?: string;
 }
 
-export type PaymentType = "cash" | "qris" | "transfer" | "ewallet" | "card";
+export type PaymentType = 'cash' | 'qris' | 'transfer' | 'ewallet' | 'card';
 
 // ============ Inventory Types ============
 export interface Inventory {
@@ -149,7 +149,7 @@ export interface Inventory {
 export interface InventoryLog {
   id: string;
   inventory_id: string;
-  change_type: "purchase" | "usage" | "adjustment" | "waste";
+  change_type: 'purchase' | 'usage' | 'adjustment' | 'waste';
   quantity: number;
   reason?: string;
   created_at: string;
@@ -220,7 +220,7 @@ export interface BusinessHealthScore {
 export interface AIRecommendation {
   id: string;
   type: RecommendationType;
-  severity: "info" | "warning" | "critical";
+  severity: 'info' | 'warning' | 'critical';
   title: string;
   description: string;
   action_items: string[];
@@ -229,17 +229,17 @@ export interface AIRecommendation {
 }
 
 export type RecommendationType =
-  | "pricing"
-  | "cost_reduction"
-  | "inventory"
-  | "menu_optimization"
-  | "opex"
-  | "sales";
+  | 'pricing'
+  | 'cost_reduction'
+  | 'inventory'
+  | 'menu_optimization'
+  | 'opex'
+  | 'sales';
 
 // ============ Offline Sync Types ============
 export interface OfflineQueueItem {
   id: string;
-  type: "order" | "inventory_log" | "menu_update";
+  type: 'order' | 'inventory_log' | 'menu_update';
   data: Record<string, unknown>;
   created_at: string;
   retry_count: number;
@@ -283,4 +283,3 @@ export interface IngredientFormData {
   base_unit: string;
   supplier?: string;
 }
-

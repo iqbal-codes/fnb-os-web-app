@@ -1,73 +1,56 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import {
-  Package,
-  AlertTriangle,
-  TrendingDown,
-  Plus,
-  Minus,
-  MoreVertical,
-} from "lucide-react";
+import { useState } from 'react';
+import { Package, AlertTriangle, TrendingDown, Plus, Minus, MoreVertical } from 'lucide-react';
 
-import {
-  useInventory,
-  getStockStatus,
-  calculateRestockAmount,
-} from "@/hooks/useInventory";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useInventory, getStockStatus, calculateRestockAmount } from '@/hooks/useInventory';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { StockAdjustDialog } from "./StockAdjustDialog";
-import type { InventoryWithIngredient } from "@/hooks/useInventory";
+} from '@/components/ui/dropdown-menu';
+import { StockAdjustDialog } from './StockAdjustDialog';
+import type { InventoryWithIngredient } from '@/hooks/useInventory';
 
 const statusConfig = {
   ok: {
-    color:
-      "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-    label: "OK",
+    color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+    label: 'OK',
   },
   low: {
-    color:
-      "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-    label: "Low",
+    color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+    label: 'Low',
     icon: AlertTriangle,
   },
   critical: {
-    color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-    label: "Critical",
+    color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    label: 'Critical',
     icon: TrendingDown,
   },
 };
 
 export function InventoryList() {
   const { data: inventory, isLoading } = useInventory();
-  const [selectedItem, setSelectedItem] =
-    useState<InventoryWithIngredient | null>(null);
-  const [adjustType, setAdjustType] = useState<
-    "purchase" | "usage" | "adjustment" | "waste"
-  >("adjustment");
+  const [selectedItem, setSelectedItem] = useState<InventoryWithIngredient | null>(null);
+  const [adjustType, setAdjustType] = useState<'purchase' | 'usage' | 'adjustment' | 'waste'>(
+    'adjustment',
+  );
 
-  const handleAdjust = (
-    item: InventoryWithIngredient,
-    type: typeof adjustType
-  ) => {
+  const handleAdjust = (item: InventoryWithIngredient, type: typeof adjustType) => {
     setSelectedItem(item);
     setAdjustType(type);
   };
 
   if (isLoading) {
     return (
-      <div className="space-y-3">
+      <div className='space-y-3'>
         {[1, 2, 3, 4].map((i) => (
-          <Skeleton key={i} className="h-20 rounded-xl" />
+          <Skeleton key={i} className='h-20 rounded-xl' />
         ))}
       </div>
     );
@@ -75,11 +58,11 @@ export function InventoryList() {
 
   if (!inventory || inventory.length === 0) {
     return (
-      <Card className="border-dashed">
-        <CardContent className="p-8 text-center">
-          <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="font-medium mb-2">No Inventory Items</h3>
-          <p className="text-sm text-muted-foreground">
+      <Card className='border-dashed'>
+        <CardContent className='p-8 text-center'>
+          <Package className='text-muted-foreground mx-auto mb-4 h-12 w-12' />
+          <h3 className='mb-2 font-medium'>No Inventory Items</h3>
+          <p className='text-muted-foreground text-sm'>
             Add ingredients first, then set up inventory tracking for each.
           </p>
         </CardContent>
@@ -89,60 +72,48 @@ export function InventoryList() {
 
   return (
     <>
-      <div className="space-y-3">
+      <div className='space-y-3'>
         {inventory.map((item) => {
           const status = getStockStatus(item.current_stock, item.min_stock);
           const config = statusConfig[status];
-          const restockAmount = calculateRestockAmount(
-            item.current_stock,
-            item.min_stock
-          );
-          const StatusIcon = "icon" in config ? config.icon : null;
+          const restockAmount = calculateRestockAmount(item.current_stock, item.min_stock);
+          const StatusIcon = 'icon' in config ? config.icon : null;
 
           return (
-            <Card key={item.id} className="overflow-hidden">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-4">
+            <Card key={item.id} className='overflow-hidden'>
+              <CardContent className='p-4'>
+                <div className='flex items-center gap-4'>
                   {/* Icon */}
                   <div
-                    className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${config.color}`}
+                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${config.color}`}
                   >
                     {StatusIcon ? (
-                      <StatusIcon className="h-5 w-5" />
+                      <StatusIcon className='h-5 w-5' />
                     ) : (
-                      <Package className="h-5 w-5" />
+                      <Package className='h-5 w-5' />
                     )}
                   </div>
 
                   {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-medium truncate">
-                        {item.ingredient?.name || "Unknown"}
-                      </h3>
-                      <Badge
-                        variant="outline"
-                        className={`text-xs shrink-0 ${config.color}`}
-                      >
+                  <div className='min-w-0 flex-1'>
+                    <div className='flex items-center gap-2'>
+                      <h3 className='truncate font-medium'>{item.ingredient?.name || 'Unknown'}</h3>
+                      <Badge variant='outline' className={`shrink-0 text-xs ${config.color}`}>
                         {config.label}
                       </Badge>
                     </div>
-                    <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
+                    <div className='text-muted-foreground mt-1 flex items-center gap-3 text-sm'>
                       <span>
                         <strong
-                          className={
-                            status !== "ok"
-                              ? "text-destructive"
-                              : "text-foreground"
-                          }
+                          className={status !== 'ok' ? 'text-destructive' : 'text-foreground'}
                         >
                           {item.current_stock}
                         </strong>
-                        {" / "}
+                        {' / '}
                         {item.min_stock} {item.unit}
                       </span>
-                      {status !== "ok" && restockAmount > 0 && (
-                        <span className="text-xs">
+                      {status !== 'ok' && restockAmount > 0 && (
+                        <span className='text-xs'>
                           Need +{restockAmount} {item.unit}
                         </span>
                       )}
@@ -150,39 +121,35 @@ export function InventoryList() {
                   </div>
 
                   {/* Quick Actions */}
-                  <div className="flex items-center gap-1">
+                  <div className='flex items-center gap-1'>
                     <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => handleAdjust(item, "usage")}
+                      variant='outline'
+                      size='icon'
+                      className='h-8 w-8'
+                      onClick={() => handleAdjust(item, 'usage')}
                     >
-                      <Minus className="h-4 w-4" />
+                      <Minus className='h-4 w-4' />
                     </Button>
                     <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => handleAdjust(item, "purchase")}
+                      variant='outline'
+                      size='icon'
+                      className='h-8 w-8'
+                      onClick={() => handleAdjust(item, 'purchase')}
                     >
-                      <Plus className="h-4 w-4" />
+                      <Plus className='h-4 w-4' />
                     </Button>
 
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreVertical className="h-4 w-4" />
+                        <Button variant='ghost' size='icon' className='h-8 w-8'>
+                          <MoreVertical className='h-4 w-4' />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() => handleAdjust(item, "adjustment")}
-                        >
+                      <DropdownMenuContent align='end'>
+                        <DropdownMenuItem onClick={() => handleAdjust(item, 'adjustment')}>
                           Adjust Stock
                         </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleAdjust(item, "waste")}
-                        >
+                        <DropdownMenuItem onClick={() => handleAdjust(item, 'waste')}>
                           Record Waste
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -204,4 +171,3 @@ export function InventoryList() {
     </>
   );
 }
-

@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-import { generateJSON } from "@/lib/ai/gemini";
+import { NextRequest, NextResponse } from 'next/server';
+import { generateJSON } from '@/lib/ai/gemini';
 
 interface BusinessAnalysis {
   business_type: string;
-  complexity: "simple" | "moderate" | "complex";
+  complexity: 'simple' | 'moderate' | 'complex';
   suggested_menu_categories: string[];
   estimated_startup_cost: {
     min: number;
@@ -36,13 +36,13 @@ Kamu adalah konsultan bisnis F&B Indonesia yang berpengalaman.
 Analisis ide bisnis berikut dan berikan rekomendasi:
 
 INFORMASI BISNIS:
-- Nama: ${business_name || "Belum ada"}
-- Tipe: ${business_type || "F&B umum"}
-- Deskripsi: ${description || "Belum ada deskripsi"}
-- Model Operasi: ${operating_model || "Belum ditentukan"}
-- Ukuran Tim: ${team_size || "Belum ditentukan"}
-- Lokasi: ${location || "Indonesia"}
-- Target Penjualan Harian: ${target_daily_sales || "Belum ditentukan"} transaksi
+- Nama: ${business_name || 'Belum ada'}
+- Tipe: ${business_type || 'F&B umum'}
+- Deskripsi: ${description || 'Belum ada deskripsi'}
+- Model Operasi: ${operating_model || 'Belum ditentukan'}
+- Ukuran Tim: ${team_size || 'Belum ditentukan'}
+- Lokasi: ${location || 'Indonesia'}
+- Target Penjualan Harian: ${target_daily_sales || 'Belum ditentukan'} transaksi
 
 Berikan analisis dalam format JSON:
 {
@@ -71,11 +71,7 @@ Gunakan harga pasar Indonesia yang realistis untuk tahun 2024.
 
     return NextResponse.json({ analysis });
   } catch (error) {
-    console.error("AI analyze-idea error:", error);
-    return NextResponse.json(
-      { error: "Failed to analyze business idea" },
-      { status: 500 }
-    );
+    console.error('AI analyze-idea error:', error);
+    return NextResponse.json({ error: 'Failed to analyze business idea' }, { status: 500 });
   }
 }
-

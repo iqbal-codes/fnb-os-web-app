@@ -1,5 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
+import { createClient } from '@/lib/supabase/server';
+import { NextResponse } from 'next/server';
 
 // GET - Get dashboard stats (today's sales, orders count, etc.)
 export async function GET() {
@@ -11,14 +11,14 @@ export async function GET() {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Get user's business
     const { data: business } = await supabase
-      .from("businesses")
-      .select("id")
-      .eq("user_id", user.id)
+      .from('businesses')
+      .select('id')
+      .eq('user_id', user.id)
       .single();
 
     if (!business) {
@@ -30,7 +30,7 @@ export async function GET() {
     }
 
     // Get today's stats
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().split('T')[0];
 
     // Try to get daily summary (will fail if table doesn't exist yet)
     let todaySales = 0;
@@ -38,10 +38,10 @@ export async function GET() {
 
     try {
       const { data: summary } = await supabase
-        .from("daily_summaries")
-        .select("total_sales, total_orders")
-        .eq("business_id", business.id)
-        .eq("date", today)
+        .from('daily_summaries')
+        .select('total_sales, total_orders')
+        .eq('business_id', business.id)
+        .eq('date', today)
         .single();
 
       if (summary) {
@@ -58,11 +58,7 @@ export async function GET() {
       healthScore: null, // Will be calculated by AI later
     });
   } catch (error) {
-    console.error("Error fetching dashboard stats:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error('Error fetching dashboard stats:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-

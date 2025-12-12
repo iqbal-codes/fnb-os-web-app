@@ -1,8 +1,8 @@
 // Price History Hooks
 // Track ingredient price changes over time
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiClient } from "@/lib/api/client";
-import { useBusinessStore } from "@/stores/businessStore";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiClient } from '@/lib/api/client';
+import { useBusinessStore } from '@/stores/businessStore';
 
 export interface PriceChange {
   id: string;
@@ -20,7 +20,7 @@ export interface PriceAlert {
   old_price: number;
   current_price: number;
   change_percent: number;
-  severity: "low" | "medium" | "high";
+  severity: 'low' | 'medium' | 'high';
   message: string;
 }
 
@@ -31,7 +31,7 @@ export function usePriceHistory(ingredientId?: string) {
   const { currentBusiness } = useBusinessStore();
 
   return useQuery({
-    queryKey: ["price-history", currentBusiness?.id, ingredientId],
+    queryKey: ['price-history', currentBusiness?.id, ingredientId],
     queryFn: async (): Promise<PriceChange[]> => {
       if (!currentBusiness?.id) return [];
 
@@ -57,13 +57,13 @@ export function usePriceAlerts() {
   const { currentBusiness } = useBusinessStore();
 
   return useQuery({
-    queryKey: ["price-alerts", currentBusiness?.id],
+    queryKey: ['price-alerts', currentBusiness?.id],
     queryFn: async (): Promise<PriceAlert[]> => {
       if (!currentBusiness?.id) return [];
 
       try {
         const response = await apiClient.get<{ alerts: PriceAlert[] }>(
-          `/api/ingredients/price-alerts?business_id=${currentBusiness.id}`
+          `/api/ingredients/price-alerts?business_id=${currentBusiness.id}`,
         );
         return response.data.alerts || [];
       } catch {
@@ -86,7 +86,7 @@ export function useRecordPrice() {
     mutationFn: async ({
       ingredientId,
       price,
-      source = "manual",
+      source = 'manual',
     }: {
       ingredientId: string;
       price: number;
@@ -98,9 +98,9 @@ export function useRecordPrice() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["price-history"] });
-      queryClient.invalidateQueries({ queryKey: ["price-alerts"] });
-      queryClient.invalidateQueries({ queryKey: ["ingredients"] });
+      queryClient.invalidateQueries({ queryKey: ['price-history'] });
+      queryClient.invalidateQueries({ queryKey: ['price-alerts'] });
+      queryClient.invalidateQueries({ queryKey: ['ingredients'] });
     },
   });
 }
@@ -109,22 +109,22 @@ export function useRecordPrice() {
 function getMockPriceAlerts(): PriceAlert[] {
   return [
     {
-      ingredient_id: "1",
-      ingredient_name: "Kopi Arabica",
+      ingredient_id: '1',
+      ingredient_name: 'Kopi Arabica',
       old_price: 150000,
       current_price: 175000,
       change_percent: 16.67,
-      severity: "high",
-      message: "Harga naik 16.7% - pertimbangkan update harga menu",
+      severity: 'high',
+      message: 'Harga naik 16.7% - pertimbangkan update harga menu',
     },
     {
-      ingredient_id: "2",
-      ingredient_name: "Susu Full Cream",
+      ingredient_id: '2',
+      ingredient_name: 'Susu Full Cream',
       old_price: 18000,
       current_price: 19500,
       change_percent: 8.33,
-      severity: "medium",
-      message: "Harga naik 8.3% - monitor margin profit",
+      severity: 'medium',
+      message: 'Harga naik 8.3% - monitor margin profit',
     },
   ];
 }
@@ -132,20 +132,17 @@ function getMockPriceAlerts(): PriceAlert[] {
 /**
  * Calculate severity based on price change
  */
-export function getPriceChangeSeverity(
-  changePercent: number
-): "low" | "medium" | "high" {
+export function getPriceChangeSeverity(changePercent: number): 'low' | 'medium' | 'high' {
   const absChange = Math.abs(changePercent);
-  if (absChange >= 15) return "high";
-  if (absChange >= 8) return "medium";
-  return "low";
+  if (absChange >= 15) return 'high';
+  if (absChange >= 8) return 'medium';
+  return 'low';
 }
 
 /**
  * Format price change for display
  */
 export function formatPriceChange(changePercent: number): string {
-  const sign = changePercent >= 0 ? "+" : "";
+  const sign = changePercent >= 0 ? '+' : '';
   return `${sign}${changePercent.toFixed(1)}%`;
 }
-

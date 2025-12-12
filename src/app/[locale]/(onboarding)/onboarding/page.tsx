@@ -1,80 +1,40 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import {
-  ChefHat,
-  Sparkles,
-  Store,
-  ArrowRight,
-  ArrowLeft,
-  Loader2,
-  Building2,
-  Users,
-  MapPin,
-} from "lucide-react";
-import { toast } from "sonner";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { ChefHat, Sparkles, Store, ArrowRight, ArrowLeft } from 'lucide-react';
+import { toast } from 'sonner';
 
-import { useCreateBusiness } from "@/hooks/useBusiness";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { useCreateBusiness } from '@/hooks/useBusiness';
+import { Ingredient } from '@/lib/businessLogic';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Progress } from "@/components/ui/progress";
-import { Slider } from "@/components/ui/slider";
+} from '@/components/ui/select';
+import { Progress } from '@/components/ui/progress';
+import { Slider } from '@/components/ui/slider';
 
 // Onboarding step components
-import { OpexSetup } from "@/components/onboarding/OpexSetup";
-import { EquipmentSetup } from "@/components/onboarding/EquipmentSetup";
-import { FirstMenuSetup } from "@/components/onboarding/FirstMenuSetup";
-import { PlanningSummary } from "@/components/onboarding/PlanningSummary";
-import { BulkMenuInput } from "@/components/onboarding/BulkMenuInput";
+import { OpexSetup } from '@/components/onboarding/OpexSetup';
+import { EquipmentSetup } from '@/components/onboarding/EquipmentSetup';
+import { FirstMenuSetup } from '@/components/onboarding/FirstMenuSetup';
+import { PlanningSummary } from '@/components/onboarding/PlanningSummary';
+import { BusinessIdeaSetup } from '@/components/onboarding/BusinessIdeaSetup';
+import { BulkMenuInput } from '@/components/onboarding/BulkMenuInput';
+import { businessTypes, businessTypeValues } from '@/components/onboarding/constants';
 
 // Constants
-const businessTypes = [
-  { value: "coffee_shop", label: "Coffee Shop / Cafe", icon: "☕" },
-  { value: "restaurant", label: "Restaurant", icon: "🍽️" },
-  { value: "food_stall", label: "Food Stall / Warung", icon: "🏪" },
-  { value: "bakery", label: "Bakery / Pastry", icon: "🥐" },
-  { value: "beverage_stall", label: "Beverage Stall", icon: "🧋" },
-  { value: "dessert_shop", label: "Dessert Shop", icon: "🍰" },
-  { value: "catering", label: "Catering", icon: "🍱" },
-  { value: "cloud_kitchen", label: "Cloud Kitchen", icon: "👨‍🍳" },
-  { value: "other", label: "Other", icon: "🍴" },
-] as const;
-
-const operatingModels = [
-  { value: "home_based", label: "Home-based (Rumahan)" },
-  { value: "booth", label: "Booth / Stall" },
-  { value: "cafe", label: "Café / Shop" },
-  { value: "cloud_kitchen", label: "Cloud Kitchen" },
-];
-
-const teamSizes = [
-  { value: "solo", label: "Just me" },
-  { value: "2-3", label: "2-3 orang" },
-  { value: "4-5", label: "4-5 orang" },
-  { value: "6+", label: "6+ orang" },
-];
-
-const businessTypeValues = businessTypes.map((t) => t.value);
+// Constants removed - imported from @/components/onboarding/constants
 
 // Schema for Path A (New Business)
 const newBusinessSchema = z.object({
@@ -89,7 +49,7 @@ const newBusinessSchema = z.object({
 });
 
 type NewBusinessFormData = z.infer<typeof newBusinessSchema>;
-type OnboardingMode = "selection" | "new" | "existing";
+type OnboardingMode = 'selection' | 'new' | 'existing';
 
 // Path A steps: 1=Idea, 2=OPEX, 3=Equipment, 4=Menu, 5=Ingredients(skip), 6=Summary
 // Path B steps: 1=Basics, 2=BulkMenu, 3=OPEX, 4=Summary
@@ -103,14 +63,14 @@ interface OnboardingState {
     name: string;
     cogs: number;
     suggestedPrice: number;
-    ingredients: any[];
+    ingredients: Ingredient[];
   };
   bulkMenus: any[];
 }
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const [mode, setMode] = useState<OnboardingMode>("selection");
+  const [mode, setMode] = useState<OnboardingMode>('selection');
   const [step, setStep] = useState(1);
   const createBusiness = useCreateBusiness();
 
@@ -118,40 +78,33 @@ export default function OnboardingPage() {
   const [onboardingData, setOnboardingData] = useState<OnboardingState>({
     opexData: [],
     equipmentData: [],
-    menuData: { name: "", cogs: 0, suggestedPrice: 0, ingredients: [] },
+    menuData: { name: '', cogs: 0, suggestedPrice: 0, ingredients: [] },
     bulkMenus: [],
   });
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    watch,
-    setValue,
-    formState: { errors },
-  } = useForm<NewBusinessFormData>({
+  const { register, handleSubmit, control, watch, setValue } = useForm<NewBusinessFormData>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(newBusinessSchema) as any,
     defaultValues: {
-      businessName: "",
+      businessName: '',
       businessType: undefined,
-      description: "",
-      location: "",
-      operatingModel: "",
-      teamSize: "",
+      description: '',
+      location: '',
+      operatingModel: '',
+      teamSize: '',
       targetDailySales: 30,
       targetMargin: 30,
     },
-    mode: "onChange",
+    mode: 'onChange',
   });
 
   const formValues = watch();
-  const totalSteps = mode === "new" ? PATH_A_STEPS : PATH_B_STEPS;
+  const totalSteps = mode === 'new' ? PATH_A_STEPS : PATH_B_STEPS;
   const progress = (step / totalSteps) * 100;
 
   // Load state on mount
   useEffect(() => {
-    const saved = localStorage.getItem("SAJIPLAN_ONBOARDING_STATE");
+    const saved = localStorage.getItem('SAJIPLAN_ONBOARDING_STATE');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -163,22 +116,19 @@ export default function OnboardingPage() {
           // We use a timeout to ensure form is ready
           setTimeout(() => {
             Object.keys(parsed.formValues).forEach((key) => {
-              setValue(
-                key as keyof NewBusinessFormData,
-                parsed.formValues[key]
-              );
+              setValue(key as keyof NewBusinessFormData, parsed.formValues[key]);
             });
           }, 0);
         }
       } catch (e) {
-        console.error("Failed to load state", e);
+        console.error('Failed to load state', e);
       }
     }
   }, [setValue]);
 
   // Save state
   useEffect(() => {
-    if (mode === "selection" && step === 1) return; // Don't save initial state if empty
+    if (mode === 'selection' && step === 1) return; // Don't save initial state if empty
 
     const state = {
       mode,
@@ -186,17 +136,17 @@ export default function OnboardingPage() {
       onboardingData,
       formValues,
     };
-    localStorage.setItem("SAJIPLAN_ONBOARDING_STATE", JSON.stringify(state));
+    localStorage.setItem('SAJIPLAN_ONBOARDING_STATE', JSON.stringify(state));
   }, [mode, step, onboardingData, formValues]);
 
-  const handleModeSelect = (selectedMode: "new" | "existing") => {
+  const handleModeSelect = (selectedMode: 'new' | 'existing') => {
     setMode(selectedMode);
     setStep(1);
   };
 
   const handleBack = () => {
     if (step === 1) {
-      setMode("selection");
+      setMode('selection');
     } else {
       setStep(step - 1);
     }
@@ -212,13 +162,13 @@ export default function OnboardingPage() {
   const calculateOpexTotal = () => {
     return onboardingData.opexData.reduce((sum, cat: any) => {
       const monthly =
-        cat.frequency === "daily"
+        cat.frequency === 'daily'
           ? cat.amount * 30
-          : cat.frequency === "weekly"
-          ? cat.amount * 4
-          : cat.frequency === "yearly"
-          ? cat.amount / 12
-          : cat.amount;
+          : cat.frequency === 'weekly'
+            ? cat.amount * 4
+            : cat.frequency === 'yearly'
+              ? cat.amount / 12
+              : cat.amount;
       return sum + monthly;
     }, 0);
   };
@@ -226,88 +176,80 @@ export default function OnboardingPage() {
   const calculateEquipmentTotal = () => {
     return onboardingData.equipmentData.reduce(
       (sum, eq: any) => sum + eq.quantity * eq.estimated_price,
-      0
+      0,
     );
   };
 
   const handleComplete = async () => {
     try {
       await createBusiness.mutateAsync({
-        name: formValues.businessName || "My F&B Business",
+        name: formValues.businessName || 'My F&B Business',
         type: formValues.businessType,
         description: formValues.description,
         location: formValues.location,
         targetMargin: formValues.targetMargin,
-        isPlanningMode: mode === "new",
+        isPlanningMode: mode === 'new',
       });
 
-      localStorage.removeItem("SAJIPLAN_ONBOARDING_STATE");
-      toast.success("Business created successfully!");
-      router.push(mode === "new" ? "/planning" : "/dashboard");
+      localStorage.removeItem('SAJIPLAN_ONBOARDING_STATE');
+      toast.success('Business created successfully!');
+      router.push(mode === 'new' ? '/planning' : '/dashboard');
       router.refresh();
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to create business";
+      const message = error instanceof Error ? error.message : 'Failed to create business';
       toast.error(message);
     }
   };
 
   // Mode Selection Screen
-  if (mode === "selection") {
+  if (mode === 'selection') {
     return (
-      <div className="animate-fade-in">
-        <div className="text-center mb-8">
-          <ChefHat className="h-12 w-12 text-primary mx-auto mb-4" />
-          <h1 className="text-2xl font-bold mb-2">
-            Selamat Datang di SajiPlan!
-          </h1>
-          <p className="text-muted-foreground">
+      <div className='animate-fade-in'>
+        <div className='mb-8 text-center'>
+          <ChefHat className='text-primary mx-auto mb-4 h-12 w-12' />
+          <h1 className='mb-2 text-2xl font-bold'>Selamat Datang di SajiPlan!</h1>
+          <p className='text-muted-foreground'>
             Plan, run, and optimize your F&B business with AI.
           </p>
         </div>
 
-        <div className="grid gap-4">
+        <div className='grid gap-4'>
           <Card
-            className="cursor-pointer border-2 hover:border-primary/50 transition-all hover:shadow-lg"
-            onClick={() => handleModeSelect("new")}
+            className='hover:border-primary/50 cursor-pointer border-2 transition-all hover:shadow-lg'
+            onClick={() => handleModeSelect('new')}
           >
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="p-3 rounded-xl bg-primary/10 text-primary">
-                  <Sparkles className="h-6 w-6" />
+            <CardContent className='p-6'>
+              <div className='flex items-start gap-4'>
+                <div className='bg-primary/10 text-primary rounded-xl p-3'>
+                  <Sparkles className='h-6 w-6' />
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg mb-1">
-                    Saya ingin memulai bisnis baru
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Dapatkan bantuan perencanaan modal, pricing, COGS, dan
-                    analisis BEP
+                <div className='flex-1'>
+                  <h3 className='mb-1 text-lg font-semibold'>Saya ingin memulai bisnis baru</h3>
+                  <p className='text-muted-foreground text-sm'>
+                    Dapatkan bantuan perencanaan modal, pricing, COGS, dan analisis BEP
                   </p>
                 </div>
-                <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                <ArrowRight className='text-muted-foreground h-5 w-5' />
               </div>
             </CardContent>
           </Card>
 
           <Card
-            className="cursor-pointer border-2 hover:border-primary/50 transition-all hover:shadow-lg"
-            onClick={() => handleModeSelect("existing")}
+            className='hover:border-primary/50 cursor-pointer border-2 transition-all hover:shadow-lg'
+            onClick={() => handleModeSelect('existing')}
           >
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="p-3 rounded-xl bg-chart-2/10 text-chart-2">
-                  <Store className="h-6 w-6" />
+            <CardContent className='p-6'>
+              <div className='flex items-start gap-4'>
+                <div className='bg-chart-2/10 text-chart-2 rounded-xl p-3'>
+                  <Store className='h-6 w-6' />
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg mb-1">
-                    Saya sudah punya bisnis
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
+                <div className='flex-1'>
+                  <h3 className='mb-1 text-lg font-semibold'>Saya sudah punya bisnis</h3>
+                  <p className='text-muted-foreground text-sm'>
                     Langsung ke POS, inventory tracking, dan business analytics
                   </p>
                 </div>
-                <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                <ArrowRight className='text-muted-foreground h-5 w-5' />
               </div>
             </CardContent>
           </Card>
@@ -317,171 +259,47 @@ export default function OnboardingPage() {
   }
 
   // ============ PATH A: NEW BUSINESS ============
-  if (mode === "new") {
+  if (mode === 'new') {
     return (
-      <div className="animate-fade-in">
+      <div className='animate-fade-in'>
         {/* Progress */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-muted-foreground">
+        <div className='mb-6'>
+          <div className='mb-2 flex items-center justify-between'>
+            <span className='text-muted-foreground text-sm'>
               Langkah {step} dari {totalSteps}
             </span>
-            <span className="text-sm font-medium text-primary">
-              Planning Mode
-            </span>
+            <span className='text-primary text-sm font-medium'>Planning Mode</span>
           </div>
-          <Progress value={progress} className="h-2" />
+          <Progress value={progress} className='h-2' />
         </div>
 
         {/* Step 1: Business Idea */}
         {step === 1 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Ceritakan ide bisnis Anda</CardTitle>
-              <CardDescription>
-                Ini membantu AI memberikan rekomendasi
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Nama Bisnis (opsional)</Label>
-                <Input
-                  placeholder="e.g., Kopi Nusantara"
-                  {...register("businessName")}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Tipe Bisnis *</Label>
-                <Controller
-                  name="businessType"
-                  control={control}
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Pilih tipe bisnis" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {businessTypes.map((type) => (
-                          <SelectItem key={type.value} value={type.value}>
-                            <span className="flex items-center gap-2">
-                              <span>{type.icon}</span>
-                              <span>{type.label}</span>
-                            </span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Deskripsi Singkat</Label>
-                <Textarea
-                  placeholder="Ceritakan konsep bisnis Anda..."
-                  rows={2}
-                  {...register("description")}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-1">
-                    <MapPin className="h-3 w-3" /> Lokasi
-                  </Label>
-                  <Input placeholder="Jakarta" {...register("location")} />
-                </div>
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-1">
-                    <Building2 className="h-3 w-3" /> Model Operasi
-                  </Label>
-                  <Controller
-                    name="operatingModel"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Pilih" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {operatingModels.map((model) => (
-                            <SelectItem key={model.value} value={model.value}>
-                              {model.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-1">
-                    <Users className="h-3 w-3" /> Ukuran Tim
-                  </Label>
-                  <Controller
-                    name="teamSize"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Pilih" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {teamSizes.map((size) => (
-                            <SelectItem key={size.value} value={size.value}>
-                              {size.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Target Penjualan/Hari</Label>
-                  <div className="flex items-center gap-2">
-                    <Controller
-                      name="targetDailySales"
-                      control={control}
-                      render={({ field }) => (
-                        <Slider
-                          min={5}
-                          max={200}
-                          step={5}
-                          value={[field.value ?? 30]}
-                          onValueChange={(v) => field.onChange(v[0])}
-                          className="flex-1"
-                        />
-                      )}
-                    />
-                    <span className="text-sm font-medium w-12 text-right">
-                      {formValues.targetDailySales}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <BusinessIdeaSetup
+            initialData={formValues}
+            onSave={(data) => {
+              // Update all fields
+              setValue('businessName', data.businessName);
+              setValue('businessType', data.businessType);
+              setValue('description', data.description);
+              setValue('location', data.location);
+              setValue('operatingModel', data.operatingModel);
+              setValue('teamSize', data.teamSize);
+              setValue('targetDailySales', data.targetDailySales);
+              handleNext();
+            }}
+            onBack={handleBack}
+          />
         )}
 
         {/* Step 2: OPEX Setup */}
         {step === 2 && (
           <OpexSetup
             businessName={formValues.businessName}
-            businessType={formValues.businessType || ""}
+            businessType={formValues.businessType || ''}
             description={formValues.description}
             location={formValues.location}
-            operatingModel={formValues.operatingModel || ""}
+            operatingModel={formValues.operatingModel || ''}
             teamSize={formValues.teamSize}
             targetDailySales={formValues.targetDailySales}
             initialData={onboardingData.opexData}
@@ -497,11 +315,11 @@ export default function OnboardingPage() {
         {step === 3 && (
           <EquipmentSetup
             businessName={formValues.businessName}
-            businessType={formValues.businessType || ""}
+            businessType={formValues.businessType || ''}
             description={formValues.description}
             location={formValues.location}
-            operatingModel={formValues.operatingModel || ""}
-            teamSize={formValues.teamSize || ""}
+            operatingModel={formValues.operatingModel || ''}
+            teamSize={formValues.teamSize || ''}
             targetDailySales={formValues.targetDailySales}
             initialData={onboardingData.equipmentData}
             onSave={(data) => {
@@ -515,7 +333,7 @@ export default function OnboardingPage() {
         {/* Step 4: First Menu */}
         {step === 4 && (
           <FirstMenuSetup
-            businessType={formValues.businessType || ""}
+            businessType={formValues.businessType || ''}
             opexTotal={calculateOpexTotal()}
             targetDailySales={formValues.targetDailySales || 30}
             onSave={(data) => {
@@ -540,7 +358,7 @@ export default function OnboardingPage() {
         {/* Step 6: Summary */}
         {step === 6 && (
           <PlanningSummary
-            businessName={formValues.businessName || "Bisnis Anda"}
+            businessName={formValues.businessName || 'Bisnis Anda'}
             menuData={onboardingData.menuData}
             opexTotal={calculateOpexTotal()}
             equipmentTotal={calculateEquipmentTotal()}
@@ -550,42 +368,24 @@ export default function OnboardingPage() {
           />
         )}
 
-        {/* Navigation for Step 1 only */}
-        {step === 1 && (
-          <div className="flex gap-3 mt-6">
-            <Button variant="outline" className="flex-1" onClick={handleBack}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Kembali
-            </Button>
-            <Button
-              className="flex-1"
-              onClick={handleNext}
-              disabled={!formValues.businessType}
-            >
-              Lanjut
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        )}
+        {/* Navigation for Step 1 only - REMOVED as it's now inside BusinessIdeaSetup */}
       </div>
     );
   }
 
   // ============ PATH B: EXISTING BUSINESS ============
-  if (mode === "existing") {
+  if (mode === 'existing') {
     return (
-      <div className="animate-fade-in">
+      <div className='animate-fade-in'>
         {/* Progress */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-muted-foreground">
+        <div className='mb-6'>
+          <div className='mb-2 flex items-center justify-between'>
+            <span className='text-muted-foreground text-sm'>
               Langkah {step} dari {totalSteps}
             </span>
-            <span className="text-sm font-medium text-chart-2">
-              Business Mode
-            </span>
+            <span className='text-chart-2 text-sm font-medium'>Business Mode</span>
           </div>
-          <Progress value={progress} className="h-2" />
+          <Progress value={progress} className='h-2' />
         </div>
 
         {/* Step 1: Business Basics */}
@@ -595,29 +395,26 @@ export default function OnboardingPage() {
               <CardTitle>Informasi Bisnis</CardTitle>
               <CardDescription>Data dasar bisnis Anda</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
+            <CardContent className='space-y-4'>
+              <div className='space-y-2'>
                 <Label>Nama Bisnis *</Label>
-                <Input
-                  placeholder="e.g., Warung Kopi Pak Haji"
-                  {...register("businessName")}
-                />
+                <Input placeholder='e.g., Warung Kopi Pak Haji' {...register('businessName')} />
               </div>
 
-              <div className="space-y-2">
+              <div className='space-y-2'>
                 <Label>Tipe Bisnis *</Label>
                 <Controller
-                  name="businessType"
+                  name='businessType'
                   control={control}
                   render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Pilih tipe bisnis" />
+                        <SelectValue placeholder='Pilih tipe bisnis' />
                       </SelectTrigger>
                       <SelectContent>
                         {businessTypes.map((type) => (
                           <SelectItem key={type.value} value={type.value}>
-                            <span className="flex items-center gap-2">
+                            <span className='flex items-center gap-2'>
                               <span>{type.icon}</span>
                               <span>{type.label}</span>
                             </span>
@@ -629,16 +426,16 @@ export default function OnboardingPage() {
                 />
               </div>
 
-              <div className="space-y-2">
+              <div className='space-y-2'>
                 <Label>Lokasi</Label>
-                <Input placeholder="Jakarta" {...register("location")} />
+                <Input placeholder='Jakarta' {...register('location')} />
               </div>
 
-              <div className="space-y-2">
+              <div className='space-y-2'>
                 <Label>Rata-rata Penjualan/Hari (opsional)</Label>
-                <div className="flex items-center gap-2">
+                <div className='flex items-center gap-2'>
                   <Controller
-                    name="targetDailySales"
+                    name='targetDailySales'
                     control={control}
                     render={({ field }) => (
                       <Slider
@@ -647,11 +444,11 @@ export default function OnboardingPage() {
                         step={5}
                         value={[field.value ?? 30]}
                         onValueChange={(v) => field.onChange(v[0])}
-                        className="flex-1"
+                        className='flex-1'
                       />
                     )}
                   />
-                  <span className="text-sm font-medium w-16 text-right">
+                  <span className='w-16 text-right text-sm font-medium'>
                     {formValues.targetDailySales} /hari
                   </span>
                 </div>
@@ -674,8 +471,8 @@ export default function OnboardingPage() {
         {/* Step 3: OPEX */}
         {step === 3 && (
           <OpexSetup
-            businessType={formValues.businessType || ""}
-            operatingModel="cafe"
+            businessType={formValues.businessType || ''}
+            operatingModel='cafe'
             initialData={onboardingData.opexData}
             onSave={(data) => {
               setOnboardingData((prev) => ({ ...prev, opexData: data }));
@@ -689,45 +486,37 @@ export default function OnboardingPage() {
         {step === 4 && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-center">Setup Selesai! 🎉</CardTitle>
-              <CardDescription className="text-center">
+              <CardTitle className='text-center'>Setup Selesai! 🎉</CardTitle>
+              <CardDescription className='text-center'>
                 Anda siap menggunakan SajiPlan
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-lg bg-muted/50 p-4 space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Bisnis</span>
-                  <span className="font-medium">
-                    {formValues.businessName || "-"}
-                  </span>
+            <CardContent className='space-y-4'>
+              <div className='bg-muted/50 space-y-3 rounded-lg p-4'>
+                <div className='flex justify-between'>
+                  <span className='text-muted-foreground'>Bisnis</span>
+                  <span className='font-medium'>{formValues.businessName || '-'}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Menu</span>
-                  <span className="font-medium">
-                    {onboardingData.bulkMenus.length} item
-                  </span>
+                <div className='flex justify-between'>
+                  <span className='text-muted-foreground'>Menu</span>
+                  <span className='font-medium'>{onboardingData.bulkMenus.length} item</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">OPEX Bulanan</span>
-                  <span className="font-medium">
-                    Rp {calculateOpexTotal().toLocaleString("id-ID")}
+                <div className='flex justify-between'>
+                  <span className='text-muted-foreground'>OPEX Bulanan</span>
+                  <span className='font-medium'>
+                    Rp {calculateOpexTotal().toLocaleString('id-ID')}
                   </span>
                 </div>
               </div>
 
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={handleBack}
-                >
-                  <ArrowLeft className="mr-2 h-4 w-4" />
+              <div className='flex gap-3'>
+                <Button variant='outline' className='flex-1' onClick={handleBack}>
+                  <ArrowLeft className='mr-2 h-4 w-4' />
                   Kembali
                 </Button>
-                <Button className="flex-1" size="lg" onClick={handleComplete}>
+                <Button className='flex-1' size='lg' onClick={handleComplete}>
                   Mulai Gunakan SajiPlan
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  <ArrowRight className='ml-2 h-4 w-4' />
                 </Button>
               </div>
             </CardContent>
@@ -736,18 +525,14 @@ export default function OnboardingPage() {
 
         {/* Navigation for Step 1 */}
         {step === 1 && (
-          <div className="flex gap-3 mt-6">
-            <Button variant="outline" className="flex-1" onClick={handleBack}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
+          <div className='mt-6 flex gap-3'>
+            <Button variant='outline' className='flex-1' onClick={handleBack}>
+              <ArrowLeft className='mr-2 h-4 w-4' />
               Kembali
             </Button>
-            <Button
-              className="flex-1"
-              onClick={handleNext}
-              disabled={!formValues.businessType}
-            >
+            <Button className='flex-1' onClick={handleNext} disabled={!formValues.businessType}>
               Lanjut
-              <ArrowRight className="ml-2 h-4 w-4" />
+              <ArrowRight className='ml-2 h-4 w-4' />
             </Button>
           </div>
         )}
@@ -757,4 +542,3 @@ export default function OnboardingPage() {
 
   return null;
 }
-

@@ -1,5 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
+import { createClient } from '@/lib/supabase/server';
+import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
@@ -7,7 +7,7 @@ export async function POST(request: Request) {
     const { email } = body;
 
     if (!email) {
-      return NextResponse.json({ error: "Email is required" }, { status: 400 });
+      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
 
     const supabase = await createClient();
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
       email,
       options: {
         emailRedirectTo: `${
-          process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+          process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
         }/auth/callback`,
       },
     });
@@ -26,14 +26,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      message: "Magic link sent! Check your email.",
+      message: 'Magic link sent! Check your email.',
     });
   } catch (error) {
-    console.error("Magic link error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error('Magic link error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-

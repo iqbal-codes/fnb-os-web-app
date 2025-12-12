@@ -1,6 +1,6 @@
-import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
-import type { Business } from "@/types";
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import type { Business } from '@/types';
 
 interface AuthState {
   user: {
@@ -12,7 +12,7 @@ interface AuthState {
   isOnline: boolean;
 
   // Actions
-  setUser: (user: AuthState["user"]) => void;
+  setUser: (user: AuthState['user']) => void;
   setBusiness: (business: Business | null) => void;
   setLoading: (loading: boolean) => void;
   setOnline: (online: boolean) => void;
@@ -25,7 +25,7 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       business: null,
       isLoading: true,
-      isOnline: typeof navigator !== "undefined" ? navigator.onLine : true,
+      isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
 
       setUser: (user) => set({ user }),
       setBusiness: (business) => set({ business }),
@@ -34,13 +34,12 @@ export const useAuthStore = create<AuthState>()(
       logout: () => set({ user: null, business: null }),
     }),
     {
-      name: "sajiplan-auth",
+      name: 'sajiplan-auth',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         user: state.user,
         business: state.business,
       }),
-    }
-  )
+    },
+  ),
 );
-

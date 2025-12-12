@@ -1,5 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
+import { createClient } from '@/lib/supabase/server';
+import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
@@ -7,16 +7,13 @@ export async function POST(request: Request) {
     const { fullName, email, password } = body;
 
     if (!email || !password || !fullName) {
-      return NextResponse.json(
-        { error: "All fields are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
     }
 
     if (password.length < 6) {
       return NextResponse.json(
-        { error: "Password must be at least 6 characters" },
-        { status: 400 }
+        { error: 'Password must be at least 6 characters' },
+        { status: 400 },
       );
     }
 
@@ -29,7 +26,7 @@ export async function POST(request: Request) {
           full_name: fullName,
         },
         emailRedirectTo: `${
-          process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+          process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
         }/auth/callback`,
       },
     });
@@ -47,17 +44,13 @@ export async function POST(request: Request) {
               fullName: data.user.user_metadata?.full_name,
             }
           : null,
-        redirect: "/onboarding",
-        message: "Account created! Please check your email to verify.",
+        redirect: '/onboarding',
+        message: 'Account created! Please check your email to verify.',
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
-    console.error("Register error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error('Register error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-

@@ -1,7 +1,7 @@
 // Analytics Hooks for Reports & Dashboard
-import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "@/lib/api/client";
-import { useBusinessStore } from "@/stores/businessStore";
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '@/lib/api/client';
+import { useBusinessStore } from '@/stores/businessStore';
 
 // ============ Types ============
 
@@ -47,7 +47,7 @@ export interface CostBreakdown {
 export interface AnalyticsFilters {
   startDate?: string;
   endDate?: string;
-  period?: "today" | "week" | "month" | "year" | "custom";
+  period?: 'today' | 'week' | 'month' | 'year' | 'custom';
 }
 
 // ============ Hooks ============
@@ -59,7 +59,7 @@ export function useSalesSummary() {
   const { currentBusiness } = useBusinessStore();
 
   return useQuery({
-    queryKey: ["analytics", "sales-summary", currentBusiness?.id],
+    queryKey: ['analytics', 'sales-summary', currentBusiness?.id],
     queryFn: async (): Promise<SalesSummary> => {
       if (!currentBusiness?.id) {
         return {
@@ -75,7 +75,7 @@ export function useSalesSummary() {
 
       try {
         const response = await apiClient.get<{ summary: SalesSummary }>(
-          `/api/analytics/summary?business_id=${currentBusiness.id}`
+          `/api/analytics/summary?business_id=${currentBusiness.id}`,
         );
         return response.data.summary;
       } catch {
@@ -101,16 +101,16 @@ export function useSalesSummary() {
  */
 export function useSalesTrend(filters?: AnalyticsFilters) {
   const { currentBusiness } = useBusinessStore();
-  const period = filters?.period || "month";
+  const period = filters?.period || 'month';
 
   return useQuery({
-    queryKey: ["analytics", "sales-trend", currentBusiness?.id, period],
+    queryKey: ['analytics', 'sales-trend', currentBusiness?.id, period],
     queryFn: async (): Promise<DailySales[]> => {
       if (!currentBusiness?.id) return [];
 
       try {
         const response = await apiClient.get<{ data: DailySales[] }>(
-          `/api/analytics/trend?business_id=${currentBusiness.id}&period=${period}`
+          `/api/analytics/trend?business_id=${currentBusiness.id}&period=${period}`,
         );
         return response.data.data;
       } catch {
@@ -128,16 +128,16 @@ export function useSalesTrend(filters?: AnalyticsFilters) {
  */
 export function useMenuPerformance(filters?: AnalyticsFilters) {
   const { currentBusiness } = useBusinessStore();
-  const period = filters?.period || "month";
+  const period = filters?.period || 'month';
 
   return useQuery({
-    queryKey: ["analytics", "menu-performance", currentBusiness?.id, period],
+    queryKey: ['analytics', 'menu-performance', currentBusiness?.id, period],
     queryFn: async (): Promise<MenuPerformance[]> => {
       if (!currentBusiness?.id) return [];
 
       try {
         const response = await apiClient.get<{ data: MenuPerformance[] }>(
-          `/api/analytics/menu-performance?business_id=${currentBusiness.id}&period=${period}`
+          `/api/analytics/menu-performance?business_id=${currentBusiness.id}&period=${period}`,
         );
         return response.data.data;
       } catch {
@@ -155,10 +155,10 @@ export function useMenuPerformance(filters?: AnalyticsFilters) {
  */
 export function useCostBreakdown(filters?: AnalyticsFilters) {
   const { currentBusiness } = useBusinessStore();
-  const period = filters?.period || "month";
+  const period = filters?.period || 'month';
 
   return useQuery({
-    queryKey: ["analytics", "cost-breakdown", currentBusiness?.id, period],
+    queryKey: ['analytics', 'cost-breakdown', currentBusiness?.id, period],
     queryFn: async (): Promise<CostBreakdown> => {
       if (!currentBusiness?.id) {
         return {
@@ -175,7 +175,7 @@ export function useCostBreakdown(filters?: AnalyticsFilters) {
 
       try {
         const response = await apiClient.get<{ breakdown: CostBreakdown }>(
-          `/api/analytics/costs?business_id=${currentBusiness.id}&period=${period}`
+          `/api/analytics/costs?business_id=${currentBusiness.id}&period=${period}`,
         );
         return response.data.breakdown;
       } catch {
@@ -202,9 +202,9 @@ export function useCostBreakdown(filters?: AnalyticsFilters) {
  * Format currency for display
  */
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
@@ -214,9 +214,9 @@ export function formatCurrency(amount: number): string {
  * Format compact number (e.g., 1.2M, 500K)
  */
 export function formatCompact(amount: number): string {
-  return new Intl.NumberFormat("id-ID", {
-    notation: "compact",
-    compactDisplay: "short",
+  return new Intl.NumberFormat('id-ID', {
+    notation: 'compact',
+    compactDisplay: 'short',
   }).format(amount);
 }
 
@@ -236,16 +236,16 @@ export function getDateRange(period: string): { start: Date; end: Date } {
   const start = new Date();
 
   switch (period) {
-    case "today":
+    case 'today':
       start.setHours(0, 0, 0, 0);
       break;
-    case "week":
+    case 'week':
       start.setDate(start.getDate() - 7);
       break;
-    case "month":
+    case 'month':
       start.setMonth(start.getMonth() - 1);
       break;
-    case "year":
+    case 'year':
       start.setFullYear(start.getFullYear() - 1);
       break;
     default:
@@ -254,4 +254,3 @@ export function getDateRange(period: string): { start: Date; end: Date } {
 
   return { start, end };
 }
-

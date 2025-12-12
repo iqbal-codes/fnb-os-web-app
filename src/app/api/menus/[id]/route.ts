@@ -1,5 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
+import { createClient } from '@/lib/supabase/server';
+import { NextResponse } from 'next/server';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -14,11 +14,11 @@ export async function GET(request: Request, { params }: Params) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { data: menu, error } = await supabase
-      .from("menus")
+      .from('menus')
       .select(
         `
         *,
@@ -36,25 +36,22 @@ export async function GET(request: Request, { params }: Params) {
             ingredients (id, name, category, price_per_market_unit)
           )
         )
-      `
+      `,
       )
-      .eq("id", id)
+      .eq('id', id)
       .single();
 
     if (error) {
-      if (error.code === "PGRST116") {
-        return NextResponse.json({ error: "Menu not found" }, { status: 404 });
+      if (error.code === 'PGRST116') {
+        return NextResponse.json({ error: 'Menu not found' }, { status: 404 });
       }
       throw error;
     }
 
     return NextResponse.json({ menu });
   } catch (error) {
-    console.error("Error fetching menu:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error('Error fetching menu:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -69,7 +66,7 @@ export async function PUT(request: Request, { params }: Params) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
@@ -86,7 +83,7 @@ export async function PUT(request: Request, { params }: Params) {
     } = body;
 
     const { data: menu, error } = await supabase
-      .from("menus")
+      .from('menus')
       .update({
         ...(name !== undefined && { name }),
         ...(category !== undefined && { category }),
@@ -98,7 +95,7 @@ export async function PUT(request: Request, { params }: Params) {
         ...(cogs !== undefined && { cogs }),
         ...(margin_percent !== undefined && { margin_percent }),
       })
-      .eq("id", id)
+      .eq('id', id)
       .select()
       .single();
 
@@ -106,11 +103,8 @@ export async function PUT(request: Request, { params }: Params) {
 
     return NextResponse.json({ menu });
   } catch (error) {
-    console.error("Error updating menu:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error('Error updating menu:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -125,20 +119,16 @@ export async function DELETE(request: Request, { params }: Params) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { error } = await supabase.from("menus").delete().eq("id", id);
+    const { error } = await supabase.from('menus').delete().eq('id', id);
 
     if (error) throw error;
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting menu:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error('Error deleting menu:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-
