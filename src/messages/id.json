@@ -1,0 +1,177 @@
+{
+  "common": {
+    "appName": "SajiPlan",
+    "loading": "Memuat...",
+    "save": "Simpan",
+    "cancel": "Batal",
+    "back": "Kembali",
+    "next": "Lanjut",
+    "submit": "Kirim",
+    "edit": "Ubah",
+    "delete": "Hapus",
+    "search": "Cari",
+    "or": "atau"
+  },
+  "auth": {
+    "login": {
+      "title": "Selamat Datang Kembali",
+      "subtitle": "Masuk ke akun Anda untuk melanjutkan",
+      "email": "Email",
+      "emailPlaceholder": "anda@example.com",
+      "password": "Kata Sandi",
+      "passwordPlaceholder": "••••••••",
+      "forgotPassword": "Lupa kata sandi?",
+      "signIn": "Masuk",
+      "sendMagicLink": "Kirim Magic Link",
+      "noAccount": "Belum punya akun?",
+      "createOne": "Buat akun"
+    },
+    "register": {
+      "title": "Buat Akun Anda",
+      "subtitle": "Mulai kelola bisnis F&B Anda hari ini",
+      "fullName": "Nama Lengkap",
+      "fullNamePlaceholder": "Nama Anda",
+      "email": "Email",
+      "emailPlaceholder": "anda@example.com",
+      "password": "Kata Sandi",
+      "passwordPlaceholder": "••••••••",
+      "confirmPassword": "Konfirmasi Kata Sandi",
+      "createAccount": "Buat Akun",
+      "hasAccount": "Sudah punya akun?",
+      "signIn": "Masuk",
+      "terms": "Dengan membuat akun, Anda menyetujui",
+      "termsLink": "Syarat & Ketentuan",
+      "and": "dan",
+      "privacyLink": "Kebijakan Privasi"
+    },
+    "logout": "Keluar"
+  },
+  "onboarding": {
+    "welcome": "Selamat Datang di SajiPlan!",
+    "subtitle": "Mari siapkan bisnis F&B Anda",
+    "newBusiness": {
+      "title": "Saya memulai bisnis baru",
+      "description": "Dapatkan bantuan perencanaan modal, harga menu, kalkulasi COGS, dan analisis BEP"
+    },
+    "existingBusiness": {
+      "title": "Saya sudah punya bisnis",
+      "description": "Langsung ke POS, pelacakan inventaris, dan analitik bisnis"
+    },
+    "step1": {
+      "title": "Ceritakan tentang bisnis Anda",
+      "subtitle": "Ini membantu kami menyesuaikan pengalaman Anda"
+    },
+    "step2": {
+      "title": "Lokasi & Pengaturan",
+      "subtitle": "Di mana lokasi bisnis Anda?"
+    },
+    "step3": {
+      "title": "Hampir selesai!",
+      "subtitle": "Periksa informasi Anda"
+    },
+    "businessName": "Nama Bisnis",
+    "businessNamePlaceholder": "cth. Kopi Nusantara",
+    "businessType": "Jenis Bisnis",
+    "selectBusinessType": "Pilih jenis bisnis",
+    "description": "Deskripsi Singkat (opsional)",
+    "descriptionPlaceholder": "Ceritakan tentang konsep bisnis Anda...",
+    "location": "Lokasi / Kota",
+    "locationPlaceholder": "cth. Jakarta, Surabaya, Bandung",
+    "locationHelp": "Ini membantu AI menyarankan harga bahan lokal",
+    "targetMargin": "Target Margin Keuntungan (%)",
+    "marginHelp": "Margin F&B tipikal adalah 25-35%",
+    "reviewNote": "Anda selalu dapat memperbarui pengaturan ini nanti",
+    "getStarted": "Mulai",
+    "planningMode": "Mode Perencanaan",
+    "businessMode": "Mode Bisnis"
+  },
+  "dashboard": {
+    "greeting": {
+      "morning": "Selamat Pagi",
+      "afternoon": "Selamat Siang",
+      "evening": "Selamat Malam"
+    },
+    "todaySales": "Penjualan Hari Ini",
+    "orders": "pesanan",
+    "healthScore": "Skor Kesehatan",
+    "notEnoughData": "Belum cukup data",
+    "goodStanding": "Kondisi baik",
+    "quickActions": "Aksi Cepat",
+    "completeSetup": "Lengkapi Setup",
+    "setupDescription": "Siapkan bisnis Anda untuk membuka semua fitur",
+    "aiDoctor": {
+      "title": "AI Business Doctor",
+      "description": "Dapatkan insight berbasis AI tentang kesehatan bisnis dan rekomendasi untuk meningkatkan profitabilitas.",
+      "viewInsights": "Lihat Insight"
+    }
+  },
+  "nav": {
+    "home": "Beranda",
+    "pos": "POS",
+    "menu": "Menu",
+    "inventory": "Inventaris",
+    "more": "Lainnya"
+  },
+  "pos": {
+    "title": "Point of Sale",
+    "subtitle": "Terima pesanan dan proses pembayaran",
+    "comingSoon": "Modul POS Segera Hadir",
+    "comingSoonDesc": "Ini akan dibangun di Phase 8. Tambahkan menu terlebih dahulu."
+  },
+  "menu": {
+    "title": "Manajemen Menu",
+    "subtitle": "Kelola item menu dan resep Anda",
+    "comingSoon": "Modul Menu Segera Hadir",
+    "comingSoonDesc": "Ini akan dibangun di Phase 4. Buat item menu pertama Anda dengan resep."
+  },
+  "inventory": {
+    "title": "Inventaris",
+    "subtitle": "Lacak level stok bahan",
+    "comingSoon": "Modul Inventaris Segera Hadir",
+    "comingSoonDesc": "Ini akan dibangun di Phase 9. Tambahkan bahan terlebih dahulu."
+  },
+  "more": {
+    "title": "Lainnya",
+    "subtitle": "Tools dan pengaturan tambahan",
+    "analytics": "Analitik & Laporan",
+    "analyticsDesc": "Penjualan, keuntungan, dan tren",
+    "planning": "Perencanaan Bisnis",
+    "planningDesc": "BEP, ROI, daftar belanja",
+    "aiDoctor": "AI Business Doctor",
+    "aiDoctorDesc": "Insight berbasis AI",
+    "settings": "Pengaturan",
+    "settingsDesc": "Pengaturan bisnis & akun",
+    "export": "Ekspor Data",
+    "exportDesc": "Laporan CSV, PDF",
+    "help": "Bantuan & Dukungan",
+    "helpDesc": "Panduan dan FAQ"
+  },
+  "businessTypes": {
+    "coffee_shop": "Kedai Kopi / Kafe",
+    "restaurant": "Restoran",
+    "food_stall": "Warung Makan",
+    "bakery": "Toko Roti / Pastry",
+    "beverage_stall": "Kedai Minuman",
+    "dessert_shop": "Toko Dessert",
+    "catering": "Katering",
+    "cloud_kitchen": "Cloud Kitchen",
+    "other": "Lainnya"
+  },
+  "theme": {
+    "light": "Terang",
+    "dark": "Gelap",
+    "system": "Sistem"
+  },
+  "language": {
+    "id": "Bahasa Indonesia",
+    "en": "English"
+  },
+  "errors": {
+    "required": "Wajib diisi",
+    "invalidEmail": "Silakan masukkan email yang valid",
+    "passwordMin": "Kata sandi minimal 6 karakter",
+    "passwordMismatch": "Kata sandi tidak cocok",
+    "nameMin": "Nama minimal 2 karakter"
+  }
+}
+

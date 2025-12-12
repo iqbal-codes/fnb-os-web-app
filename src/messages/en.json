@@ -1,0 +1,177 @@
+{
+  "common": {
+    "appName": "SajiPlan",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "edit": "Edit",
+    "delete": "Delete",
+    "search": "Search",
+    "or": "or"
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome Back",
+      "subtitle": "Sign in to your account to continue",
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••",
+      "forgotPassword": "Forgot password?",
+      "signIn": "Sign In",
+      "sendMagicLink": "Send Magic Link",
+      "noAccount": "Don't have an account?",
+      "createOne": "Create one"
+    },
+    "register": {
+      "title": "Create Your Account",
+      "subtitle": "Start managing your F&B business today",
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "Your name",
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••",
+      "confirmPassword": "Confirm Password",
+      "createAccount": "Create Account",
+      "hasAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "terms": "By creating an account, you agree to our",
+      "termsLink": "Terms of Service",
+      "and": "and",
+      "privacyLink": "Privacy Policy"
+    },
+    "logout": "Log out"
+  },
+  "onboarding": {
+    "welcome": "Welcome to SajiPlan!",
+    "subtitle": "Let's set up your F&B business",
+    "newBusiness": {
+      "title": "I'm starting a new business",
+      "description": "Get help with capital planning, menu pricing, COGS calculation, and BEP analysis"
+    },
+    "existingBusiness": {
+      "title": "I already have a business",
+      "description": "Jump straight to POS, inventory tracking, and business analytics"
+    },
+    "step1": {
+      "title": "Tell us about your business",
+      "subtitle": "This helps us customize your experience"
+    },
+    "step2": {
+      "title": "Location & Settings",
+      "subtitle": "Where is your business located?"
+    },
+    "step3": {
+      "title": "Almost there!",
+      "subtitle": "Review your information"
+    },
+    "businessName": "Business Name",
+    "businessNamePlaceholder": "e.g., Kopi Nusantara",
+    "businessType": "Business Type",
+    "selectBusinessType": "Select business type",
+    "description": "Brief Description (optional)",
+    "descriptionPlaceholder": "Tell us about your business concept...",
+    "location": "Location / City",
+    "locationPlaceholder": "e.g., Jakarta, Surabaya, Bandung",
+    "locationHelp": "This helps AI suggest local ingredient prices",
+    "targetMargin": "Target Profit Margin (%)",
+    "marginHelp": "Typical F&B margin is 25-35%",
+    "reviewNote": "You can always update these settings later",
+    "getStarted": "Get Started",
+    "planningMode": "Planning Mode",
+    "businessMode": "Business Mode"
+  },
+  "dashboard": {
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    },
+    "todaySales": "Today's Sales",
+    "orders": "orders",
+    "healthScore": "Health Score",
+    "notEnoughData": "Not enough data",
+    "goodStanding": "Good standing",
+    "quickActions": "Quick Actions",
+    "completeSetup": "Complete Setup",
+    "setupDescription": "Set up your business to unlock all features",
+    "aiDoctor": {
+      "title": "AI Business Doctor",
+      "description": "Get AI-powered insights about your business health and recommendations to improve profitability.",
+      "viewInsights": "View Insights"
+    }
+  },
+  "nav": {
+    "home": "Home",
+    "pos": "POS",
+    "menu": "Menu",
+    "inventory": "Inventory",
+    "more": "More"
+  },
+  "pos": {
+    "title": "Point of Sale",
+    "subtitle": "Take orders and process payments",
+    "comingSoon": "POS Module Coming Soon",
+    "comingSoonDesc": "This will be built in Phase 8. Add menus first to enable POS."
+  },
+  "menu": {
+    "title": "Menu Management",
+    "subtitle": "Manage your menu items and recipes",
+    "comingSoon": "Menu Module Coming Soon",
+    "comingSoonDesc": "This will be built in Phase 4. Create your first menu item with recipes."
+  },
+  "inventory": {
+    "title": "Inventory",
+    "subtitle": "Track ingredient stock levels",
+    "comingSoon": "Inventory Module Coming Soon",
+    "comingSoonDesc": "This will be built in Phase 9. Add ingredients first to track stock."
+  },
+  "more": {
+    "title": "More",
+    "subtitle": "Additional tools and settings",
+    "analytics": "Analytics & Reports",
+    "analyticsDesc": "Sales, profits, and trends",
+    "planning": "Business Planning",
+    "planningDesc": "BEP, ROI, shopping list",
+    "aiDoctor": "AI Business Doctor",
+    "aiDoctorDesc": "AI-powered insights",
+    "settings": "Settings",
+    "settingsDesc": "Business & account settings",
+    "export": "Export Data",
+    "exportDesc": "CSV, PDF reports",
+    "help": "Help & Support",
+    "helpDesc": "Guides and FAQs"
+  },
+  "businessTypes": {
+    "coffee_shop": "Coffee Shop / Cafe",
+    "restaurant": "Restaurant",
+    "food_stall": "Food Stall / Warung",
+    "bakery": "Bakery / Pastry",
+    "beverage_stall": "Beverage Stall",
+    "dessert_shop": "Dessert Shop",
+    "catering": "Catering",
+    "cloud_kitchen": "Cloud Kitchen",
+    "other": "Other"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "language": {
+    "id": "Bahasa Indonesia",
+    "en": "English"
+  },
+  "errors": {
+    "required": "Required",
+    "invalidEmail": "Please enter a valid email",
+    "passwordMin": "Password must be at least 6 characters",
+    "passwordMismatch": "Passwords don't match",
+    "nameMin": "Name must be at least 2 characters"
+  }
+}
+
