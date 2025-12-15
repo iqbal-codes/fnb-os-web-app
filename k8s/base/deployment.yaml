@@ -12,9 +12,11 @@ spec:
       labels:
         app: nextjs
     spec:
+      imagePullSecrets:
+        - name: ghcr-secret
       containers:
         - name: nextjs
-          image: ghcr.io/iqbal-codes/fnb-os-web-app:latest
+          image: ghcr.io/iqbal-codes/fnb-os-web-app:${{ github.sha }}
           ports:
             - containerPort: 3000
           env:
