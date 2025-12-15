@@ -15,7 +15,7 @@ export interface NumberInputProps extends Omit<NumericFormatProps, 'value' | 'on
   value?: number; // Controlled value
   suffix?: string;
   prefix?: string;
-  onValueChange?: (value: number | undefined) => void;
+  onValueChange?: (value?: number) => void;
   fixedDecimalScale?: boolean;
   decimalScale?: number;
   allowDecimals?: boolean;
@@ -137,10 +137,10 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
           {...props}
         />
 
-        {/* <div className='flex flex-col'>
+        <div className='flex flex-col'>
           <Button
             aria-label='Increase value'
-            className='border-input h-5 rounded-l-none rounded-br-none border-b-[0.5px] border-l-0 px-2 focus-visible:relative'
+            className='border-input h-4 rounded-l-none rounded-br-none border-b-[0.5px] border-l-0 px-1! focus-visible:relative'
             variant='outline'
             onClick={handleIncrement}
             disabled={value === max}
@@ -149,14 +149,14 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
           </Button>
           <Button
             aria-label='Decrease value'
-            className='border-input h-5 rounded-l-none rounded-tr-none border-t-[0.5px] border-l-0 px-2 focus-visible:relative'
+            className='border-input h-4 rounded-l-none rounded-tr-none border-t-[0.5px] border-l-0 px-1! focus-visible:relative'
             variant='outline'
             onClick={handleDecrement}
             disabled={value === min}
           >
             <ChevronDown size={15} />
           </Button>
-        </div> */}
+        </div>
       </div>
     );
   },

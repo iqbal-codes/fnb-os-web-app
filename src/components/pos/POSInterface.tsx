@@ -18,11 +18,6 @@ import { useMenus } from '@/hooks/useMenus';
 import { usePOSStore } from '@/stores/posStore';
 import { useBusinessStore } from '@/stores/businessStore';
 import { apiClient } from '@/lib/api/client';
-import {
-  addOfflineOrder,
-  getOfflineOrderNumber,
-  useOfflineOrderSync,
-} from '@/hooks/useOfflineSync';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -232,7 +227,7 @@ export function POSInterface() {
                   } `}
                   onClick={() => handleAddToCart(menu)}
                 >
-                  <CardContent className='p-3'>
+                  <CardContent>
                     {/* Image Placeholder */}
                     <div className='bg-muted mb-2 flex aspect-square w-full items-center justify-center rounded-lg'>
                       {menu.image_url ? (

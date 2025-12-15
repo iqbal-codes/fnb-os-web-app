@@ -34,9 +34,9 @@ export interface Ingredient {
   name: string;
   usageQuantity: number;
   usageUnit: string;
-  buyingQuantity: number;
-  buyingUnit: string;
-  buyingPrice: number;
+  buyingQuantity?: number;
+  buyingUnit?: string;
+  buyingPrice?: number;
   isAiSuggested?: boolean;
 }
 
@@ -57,6 +57,11 @@ export const getUnitCategory = (unit: string): UnitCategory | 'unknown' => {
  * Handles unit conversion between buying unit and usage unit.
  */
 export const calculateIngredientCost = (ingredient: Ingredient): number => {
+  // if buying info is missing, cost is 0
+  if (!ingredient.buyingQuantity || !ingredient.buyingUnit || !ingredient.buyingPrice) {
+    return 0;
+  }
+
   const usageCat = getUnitCategory(ingredient.usageUnit);
   const buyCat = getUnitCategory(ingredient.buyingUnit);
 
@@ -155,8 +160,23 @@ export const generateShoppingPlan = (
     const usagePerCup = ing.usageQuantity;
     const totalUsage = usagePerCup * dailySalesTarget * daysToStock;
 
+    // ... (previous code)
+
     // We need to answer: "How many buying-packs do I need?"
     // 1 buying pack = buyingQuantity [buyingUnit]
+
+    // If buying info is missing, we can't calculate packs properly.
+    if (!ing.buyingUnit || !ing.buyingQuantity || !ing.buyingPrice) {
+      return {
+        ingredientName: ing.name,
+        totalUsage: totalUsage,
+        usageUnit: ing.usageUnit,
+        packSize: 0,
+        packUnit: 'unknown',
+        packsToBuy: 0,
+        estimatedCost: 0,
+      };
+    }
 
     const usageCat = getUnitCategory(ing.usageUnit);
     const buyCat = getUnitCategory(ing.buyingUnit);

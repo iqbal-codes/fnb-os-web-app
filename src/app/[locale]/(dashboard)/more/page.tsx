@@ -104,7 +104,7 @@ export default function MorePage() {
         {moreItems.map((item) => (
           <Link key={item.href} href={item.href}>
             <Card className='hover:bg-muted/50 mb-4 transition-colors'>
-              <CardContent className='p-4'>
+              <CardContent>
                 <div className='flex items-center gap-4'>
                   <div className={`${item.color}`}>
                     <item.icon className='h-5 w-5' />

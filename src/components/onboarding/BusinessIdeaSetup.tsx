@@ -1,7 +1,5 @@
-import { zodResolver } from '@hookform/resolvers/zod';
 import { Building2, MapPin, Users } from 'lucide-react';
-import { useForm, Controller } from 'react-hook-form';
-import { z } from 'zod';
+import { useFormContext, Controller } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,48 +14,21 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { businessTypes, businessTypeValues, operatingModels, teamSizes } from './constants';
-
-const businessIdeaSchema = z.object({
-  businessName: z.string().optional(),
-  businessType: z.enum(businessTypeValues as unknown as [string, ...string[]]),
-  description: z.string().optional(),
-  location: z.string().optional(),
-  operatingModel: z.string().optional(),
-  teamSize: z.string().optional(),
-  targetDailySales: z.number().min(1).max(500).optional(),
-});
-
-export type BusinessIdeaData = z.infer<typeof businessIdeaSchema>;
+import { businessTypes, operatingModels, teamSizes } from './constants';
+// Import type from parent if needed, or just use general context
+import type { OnboardingFormValues } from '@/components/onboarding/types';
 
 interface BusinessIdeaSetupProps {
-  initialData?: BusinessIdeaData;
-  onSave: (data: BusinessIdeaData) => void;
   onBack: () => void;
+  onNext: () => void;
 }
 
-export function BusinessIdeaSetup({ initialData, onSave, onBack }: BusinessIdeaSetupProps) {
+export function BusinessIdeaSetup({ onBack, onNext }: BusinessIdeaSetupProps) {
   const {
     register,
     control,
-    handleSubmit,
     formState: { errors },
-  } = useForm<BusinessIdeaData>({
-    resolver: zodResolver(businessIdeaSchema),
-    defaultValues: {
-      businessName: initialData?.businessName || '',
-      businessType: initialData?.businessType,
-      description: initialData?.description || '',
-      location: initialData?.location || '',
-      operatingModel: initialData?.operatingModel || '',
-      teamSize: initialData?.teamSize || '',
-      targetDailySales: initialData?.targetDailySales || 30,
-    },
-  });
-
-  const onSubmit = (data: BusinessIdeaData) => {
-    onSave(data);
-  };
+  } = useFormContext<OnboardingFormValues>();
 
   return (
     <Card>
@@ -175,6 +146,8 @@ export function BusinessIdeaSetup({ initialData, onSave, onBack }: BusinessIdeaS
                   onValueChange={field.onChange}
                   min={1}
                   max={500}
+                  thousandSeparator='.'
+                  decimalSeparator=','
                   placeholder='30'
                 />
               )}
@@ -186,7 +159,7 @@ export function BusinessIdeaSetup({ initialData, onSave, onBack }: BusinessIdeaS
           <Button variant='outline' className='flex-1' onClick={onBack} type='button'>
             Kembali
           </Button>
-          <Button className='flex-1' onClick={handleSubmit(onSubmit)}>
+          <Button className='flex-1' onClick={onNext}>
             Lanjut
           </Button>
         </div>

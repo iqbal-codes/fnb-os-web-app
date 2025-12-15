@@ -1,90 +1,60 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useForm, Controller } from 'react-hook-form';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { ChefHat, Sparkles, Store, ArrowRight, ArrowLeft } from 'lucide-react';
+import { ChefHat, Sparkles, Store, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { useAuthStore } from '@/stores/authStore';
+import { useOnboardingState } from '@/hooks/useOnboarding';
 import { useCreateBusiness } from '@/hooks/useBusiness';
-import { Ingredient } from '@/lib/businessLogic';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Slider } from '@/components/ui/slider';
 
 // Onboarding step components
 import { OpexSetup } from '@/components/onboarding/OpexSetup';
 import { EquipmentSetup } from '@/components/onboarding/EquipmentSetup';
-import { FirstMenuSetup } from '@/components/onboarding/FirstMenuSetup';
-import { PlanningSummary } from '@/components/onboarding/PlanningSummary';
+import { FirstMenuSetup } from '@/components/onboarding/first-menu';
+import { PlanningSummary } from '@/components/onboarding/planning-summary';
 import { BusinessIdeaSetup } from '@/components/onboarding/BusinessIdeaSetup';
 import { BulkMenuInput } from '@/components/onboarding/BulkMenuInput';
-import { businessTypes, businessTypeValues } from '@/components/onboarding/constants';
+import { ExistingBusinessSetup } from '@/components/onboarding/ExistingBusinessSetup';
+import { OnboardingSuccess } from '@/components/onboarding/OnboardingSuccess';
+import { FormPersistence } from '@/components/onboarding/FormPersistence';
 
-// Constants
-// Constants removed - imported from @/components/onboarding/constants
+// Schema and types
+import { onboardingSchema } from '@/components/onboarding/schema';
+import type { OnboardingFormValues, OnboardingMode } from '@/components/onboarding/types';
 
-// Schema for Path A (New Business)
-const newBusinessSchema = z.object({
-  businessName: z.string().optional(),
-  businessType: z.enum(businessTypeValues as unknown as [string, ...string[]]),
-  description: z.string().optional(),
-  location: z.string().optional(),
-  operatingModel: z.string().optional(),
-  teamSize: z.string().optional(),
-  targetDailySales: z.number().min(1).max(500).optional(),
-  targetMargin: z.number().min(10).max(80).optional(),
-});
+// Re-export for child components that need the type
+export type { OnboardingFormValues } from '@/components/onboarding/types';
 
-type NewBusinessFormData = z.infer<typeof newBusinessSchema>;
-type OnboardingMode = 'selection' | 'new' | 'existing';
-
-// Path A steps: 1=Idea, 2=OPEX, 3=Equipment, 4=Menu, 5=Ingredients(skip), 6=Summary
-// Path B steps: 1=Basics, 2=BulkMenu, 3=OPEX, 4=Summary
-const PATH_A_STEPS = 6;
+const PATH_A_STEPS = 5;
 const PATH_B_STEPS = 4;
-
-interface OnboardingState {
-  opexData: any[];
-  equipmentData: any[];
-  menuData: {
-    name: string;
-    cogs: number;
-    suggestedPrice: number;
-    ingredients: Ingredient[];
-  };
-  bulkMenus: any[];
-}
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const [mode, setMode] = useState<OnboardingMode>('selection');
-  const [step, setStep] = useState(1);
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
   const createBusiness = useCreateBusiness();
 
-  // Onboarding collected data
-  const [onboardingData, setOnboardingData] = useState<OnboardingState>({
-    opexData: [],
-    equipmentData: [],
-    menuData: { name: '', cogs: 0, suggestedPrice: 0, ingredients: [] },
-    bulkMenus: [],
-  });
+  // Get state from URL (Source of Truth)
+  const modeParam = searchParams.get('mode') as OnboardingMode | null;
+  const stepParam = searchParams.get('step');
 
-  const { register, handleSubmit, control, watch, setValue } = useForm<NewBusinessFormData>({
+  const mode: OnboardingMode =
+    modeParam && ['new', 'existing'].includes(modeParam) ? modeParam : 'selection';
+  const step = stepParam ? parseInt(stepParam, 10) : 1;
+
+  const [maxReachedStep, setMaxReachedStep] = useState(1);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Initialize Form
+  const methods = useForm<OnboardingFormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(newBusinessSchema) as any,
+    resolver: zodResolver(onboardingSchema) as any,
     defaultValues: {
       businessName: '',
       businessType: undefined,
@@ -92,102 +62,208 @@ export default function OnboardingPage() {
       location: '',
       operatingModel: '',
       teamSize: '',
-      targetDailySales: 30,
-      targetMargin: 30,
+      targetDailySales: undefined,
+      targetMargin: 50,
+      opexData: [],
+      equipmentData: [],
+      menuData: {
+        name: '',
+        category: 'minuman',
+        description: '',
+        ingredients: [],
+        estimatedCogs: 0,
+        suggestedPrice: 0,
+      },
+      bulkMenus: [],
     },
     mode: 'onChange',
   });
 
-  const formValues = watch();
+  const { setValue, trigger, getValues } = methods;
+  // Removed top-level watch to prevent full page re-renders
+
   const totalSteps = mode === 'new' ? PATH_A_STEPS : PATH_B_STEPS;
   const progress = (step / totalSteps) * 100;
 
-  // Load state on mount
+  const { user } = useAuthStore();
+  const userId = user?.id;
+
+  // React Query for Remote State
+  const { data: remoteStateResponse } = useOnboardingState();
+  const remoteState = remoteStateResponse?.data;
+
+  // Load state on mount - sync with Supabase and LocalStorage
   useEffect(() => {
-    const saved = localStorage.getItem('SAJIPLAN_ONBOARDING_STATE');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed.mode) setMode(parsed.mode);
-        if (parsed.step) setStep(parsed.step);
-        if (parsed.onboardingData) setOnboardingData(parsed.onboardingData);
-        if (parsed.formValues) {
-          // Reset form with saved values, but keep defaultValues for safety
-          // We use a timeout to ensure form is ready
-          setTimeout(() => {
-            Object.keys(parsed.formValues).forEach((key) => {
-              setValue(key as keyof NewBusinessFormData, parsed.formValues[key]);
-            });
-          }, 0);
-        }
-      } catch (e) {
-        console.error('Failed to load state', e);
+    const restoreState = async () => {
+      // Must wait for user to be checked
+      if (userId === undefined) return;
+      if (!userId) {
+        // Handle case if no user but on this page? Middleware prevents this, but safe to check.
+        setIsHydrated(true);
+        return;
       }
-    }
-  }, [setValue]);
 
-  // Save state
-  useEffect(() => {
-    if (mode === 'selection' && step === 1) return; // Don't save initial state if empty
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let finalState: any = null;
 
-    const state = {
-      mode,
-      step,
-      onboardingData,
-      formValues,
+      // 1. Try LocalStorage (Fastest)
+      const localKey = `SAJIPLAN_ONBOARDING_STATE_${userId}`;
+      const localSaved = localStorage.getItem(localKey);
+      const localState = localSaved ? JSON.parse(localSaved) : null;
+
+      // 2. Compare with Remote (from React Query)
+      // We only run this logic if we have remote state or if we are sure remote state is empty/loaded
+      // For now, let's treat the query data as available if the hook executed.
+
+      if (
+        remoteState &&
+        (!localState || new Date(remoteState.updatedAt) > new Date(localState.updatedAt))
+      ) {
+        finalState = remoteState;
+        // Sync back to local
+        localStorage.setItem(localKey, JSON.stringify(remoteState));
+      } else {
+        finalState = localState;
+      }
+
+      // 3. Restore
+      if (finalState) {
+        try {
+          // Restore Form Values
+          if (finalState.formValues) {
+            Object.keys(finalState.formValues).forEach((key) => {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              setValue(key as keyof OnboardingFormValues, finalState.formValues[key] as any);
+            });
+          }
+
+          // Restore Max Step
+          if (finalState.maxReachedStep) {
+            setMaxReachedStep(finalState.maxReachedStep);
+          }
+        } catch (e) {
+          console.error('Failed to parse final state', e);
+        }
+      }
+
+      // 5. Enable Validation
+      setIsHydrated(true);
     };
-    localStorage.setItem('SAJIPLAN_ONBOARDING_STATE', JSON.stringify(state));
-  }, [mode, step, onboardingData, formValues]);
+
+    restoreState();
+  }, [setValue, userId, remoteState]);
+
+  // Validation: Prevent URL jumping - simplified
+  // Validation: Prevent URL jumping and invalid steps
+  useEffect(() => {
+    if (!isHydrated) return;
+    if (mode === 'selection') return;
+
+    const effectiveLimit = Math.min(maxReachedStep, totalSteps);
+
+    if (step < 1) {
+      router.replace(`${pathname}?mode=${mode}&step=1`);
+    } else if (step > effectiveLimit) {
+      router.replace(`${pathname}?mode=${mode}&step=${effectiveLimit}`);
+      toast.error('Selesaikan langkah sebelumnya terlebih dahulu');
+    }
+  }, [step, maxReachedStep, totalSteps, mode, router, pathname, isHydrated]);
+
+  const updateUrl = (newMode: OnboardingMode, newStep: number) => {
+    const params = new URLSearchParams(searchParams);
+    if (newMode === 'selection') {
+      params.delete('mode');
+      params.delete('step');
+    } else {
+      params.set('mode', newMode);
+      params.set('step', newStep.toString());
+    }
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   const handleModeSelect = (selectedMode: 'new' | 'existing') => {
-    setMode(selectedMode);
-    setStep(1);
+    setMaxReachedStep(1);
+    updateUrl(selectedMode, 1);
   };
 
   const handleBack = () => {
-    if (step === 1) {
-      setMode('selection');
+    if (step <= 1) {
+      updateUrl('selection', 1);
     } else {
-      setStep(step - 1);
+      updateUrl(mode, step - 1);
     }
   };
 
-  const handleNext = () => {
+  const validateStep = async () => {
+    let isValid = false;
+    const values = getValues();
+
+    if (mode === 'new') {
+      switch (step) {
+        case 1: // Business Idea
+          isValid = await trigger(['businessType']); // At least businessType is usually required, but schema says optional? schema in components enforced it.
+          // Let's enforce strictly if needed.
+          if (!values.businessType) {
+            // trigger might pass if schema allows optional, so explicit check
+            toast.error('Pilih tipe bisnis terlebih dahulu');
+            return false;
+          }
+          isValid = true;
+          break;
+        case 2: // OPEX
+          // Opex is optional strictly speaking, but maybe good to hav some check?
+          // Assuming always valid for now as it can be empty
+          isValid = true;
+          break;
+        case 3: // Equipment
+          isValid = true;
+          break;
+        case 4: // Menu
+          // Check if name and category are filled
+          if (!values.menuData.name) {
+            toast.error('Nama menu wajib diisi');
+            return false;
+          }
+          if (!values.menuData.ingredients || values.menuData.ingredients.length === 0) {
+            toast.error('Tambahkan minimal 1 bahan');
+            return false;
+          }
+          isValid = true;
+          break;
+        default:
+          isValid = true;
+      }
+    } else {
+      // Mode Existing
+      if (step === 1) {
+        isValid = await trigger(['businessName', 'businessType']);
+      } else {
+        isValid = true;
+      }
+    }
+    return isValid;
+  };
+
+  const handleNext = async () => {
     if (step < totalSteps) {
-      setStep(step + 1);
+      const isValid = await validateStep();
+      if (!isValid) return;
+
+      const nextStep = step + 1;
+      setMaxReachedStep(Math.max(maxReachedStep, nextStep));
+      updateUrl(mode, nextStep);
     }
-  };
-
-  // Calculate totals for summary
-  const calculateOpexTotal = () => {
-    return onboardingData.opexData.reduce((sum, cat: any) => {
-      const monthly =
-        cat.frequency === 'daily'
-          ? cat.amount * 30
-          : cat.frequency === 'weekly'
-            ? cat.amount * 4
-            : cat.frequency === 'yearly'
-              ? cat.amount / 12
-              : cat.amount;
-      return sum + monthly;
-    }, 0);
-  };
-
-  const calculateEquipmentTotal = () => {
-    return onboardingData.equipmentData.reduce(
-      (sum, eq: any) => sum + eq.quantity * eq.estimated_price,
-      0,
-    );
   };
 
   const handleComplete = async () => {
+    const values = getValues();
     try {
       await createBusiness.mutateAsync({
-        name: formValues.businessName || 'My F&B Business',
-        type: formValues.businessType,
-        description: formValues.description,
-        location: formValues.location,
-        targetMargin: formValues.targetMargin,
+        name: values.businessName || 'My F&B Business',
+        type: values.businessType!,
+        description: values.description,
+        location: values.location,
+        targetMargin: values.targetMargin,
         isPlanningMode: mode === 'new',
       });
 
@@ -201,7 +277,8 @@ export default function OnboardingPage() {
     }
   };
 
-  // Mode Selection Screen
+  // --- Renderers ---
+
   if (mode === 'selection') {
     return (
       <div className='animate-fade-in'>
@@ -234,10 +311,7 @@ export default function OnboardingPage() {
             </CardContent>
           </Card>
 
-          <Card
-            className='hover:border-primary/50 cursor-pointer border-2 transition-all hover:shadow-lg'
-            onClick={() => handleModeSelect('existing')}
-          >
+          <Card className='cursor-not-allowed border-2 opacity-20 transition-all hover:shadow-lg'>
             <CardContent className='p-6'>
               <div className='flex items-start gap-4'>
                 <div className='bg-chart-2/10 text-chart-2 rounded-xl p-3'>
@@ -258,287 +332,65 @@ export default function OnboardingPage() {
     );
   }
 
-  // ============ PATH A: NEW BUSINESS ============
-  if (mode === 'new') {
-    return (
+  // --- Wrap everything else in FormProvider ---
+  return (
+    <FormProvider {...methods}>
+      <FormPersistence
+        mode={mode}
+        step={step}
+        maxReachedStep={maxReachedStep}
+        userId={userId || ''}
+      />
       <div className='animate-fade-in'>
-        {/* Progress */}
+        {/* Progress Helper */}
         <div className='mb-6'>
           <div className='mb-2 flex items-center justify-between'>
             <span className='text-muted-foreground text-sm'>
               Langkah {step} dari {totalSteps}
             </span>
-            <span className='text-primary text-sm font-medium'>Planning Mode</span>
-          </div>
-          <Progress value={progress} className='h-2' />
-        </div>
-
-        {/* Step 1: Business Idea */}
-        {step === 1 && (
-          <BusinessIdeaSetup
-            initialData={formValues}
-            onSave={(data) => {
-              // Update all fields
-              setValue('businessName', data.businessName);
-              setValue('businessType', data.businessType);
-              setValue('description', data.description);
-              setValue('location', data.location);
-              setValue('operatingModel', data.operatingModel);
-              setValue('teamSize', data.teamSize);
-              setValue('targetDailySales', data.targetDailySales);
-              handleNext();
-            }}
-            onBack={handleBack}
-          />
-        )}
-
-        {/* Step 2: OPEX Setup */}
-        {step === 2 && (
-          <OpexSetup
-            businessName={formValues.businessName}
-            businessType={formValues.businessType || ''}
-            description={formValues.description}
-            location={formValues.location}
-            operatingModel={formValues.operatingModel || ''}
-            teamSize={formValues.teamSize}
-            targetDailySales={formValues.targetDailySales}
-            initialData={onboardingData.opexData}
-            onSave={(data) => {
-              setOnboardingData((prev) => ({ ...prev, opexData: data }));
-              handleNext();
-            }}
-            onBack={handleBack}
-          />
-        )}
-
-        {/* Step 3: Equipment Setup */}
-        {step === 3 && (
-          <EquipmentSetup
-            businessName={formValues.businessName}
-            businessType={formValues.businessType || ''}
-            description={formValues.description}
-            location={formValues.location}
-            operatingModel={formValues.operatingModel || ''}
-            teamSize={formValues.teamSize || ''}
-            targetDailySales={formValues.targetDailySales}
-            initialData={onboardingData.equipmentData}
-            onSave={(data) => {
-              setOnboardingData((prev) => ({ ...prev, equipmentData: data }));
-              handleNext();
-            }}
-            onBack={handleBack}
-          />
-        )}
-
-        {/* Step 4: First Menu */}
-        {step === 4 && (
-          <FirstMenuSetup
-            businessType={formValues.businessType || ''}
-            opexTotal={calculateOpexTotal()}
-            targetDailySales={formValues.targetDailySales || 30}
-            onSave={(data) => {
-              setOnboardingData((prev) => ({
-                ...prev,
-                menuData: {
-                  name: data.name,
-                  cogs: data.estimatedCogs,
-                  suggestedPrice: data.suggestedPrice,
-                  ingredients: data.ingredients,
-                },
-              }));
-              // Skip step 5 (ingredient prices are in menu), go to summary
-              setStep(6);
-            }}
-            onBack={handleBack}
-          />
-        )}
-
-        {/* Step 5: Ingredient Price (skipped, handled in Step 4) */}
-
-        {/* Step 6: Summary */}
-        {step === 6 && (
-          <PlanningSummary
-            businessName={formValues.businessName || 'Bisnis Anda'}
-            menuData={onboardingData.menuData}
-            opexTotal={calculateOpexTotal()}
-            equipmentTotal={calculateEquipmentTotal()}
-            targetDailySales={formValues.targetDailySales || 30}
-            onComplete={handleComplete}
-            onBack={handleBack}
-          />
-        )}
-
-        {/* Navigation for Step 1 only - REMOVED as it's now inside BusinessIdeaSetup */}
-      </div>
-    );
-  }
-
-  // ============ PATH B: EXISTING BUSINESS ============
-  if (mode === 'existing') {
-    return (
-      <div className='animate-fade-in'>
-        {/* Progress */}
-        <div className='mb-6'>
-          <div className='mb-2 flex items-center justify-between'>
-            <span className='text-muted-foreground text-sm'>
-              Langkah {step} dari {totalSteps}
+            <span className='text-primary text-sm font-medium'>
+              {mode === 'new' ? 'Planning Mode' : 'Business Mode'}
             </span>
-            <span className='text-chart-2 text-sm font-medium'>Business Mode</span>
           </div>
           <Progress value={progress} className='h-2' />
         </div>
 
-        {/* Step 1: Business Basics */}
-        {step === 1 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Informasi Bisnis</CardTitle>
-              <CardDescription>Data dasar bisnis Anda</CardDescription>
-            </CardHeader>
-            <CardContent className='space-y-4'>
-              <div className='space-y-2'>
-                <Label>Nama Bisnis *</Label>
-                <Input placeholder='e.g., Warung Kopi Pak Haji' {...register('businessName')} />
-              </div>
+        {/* --- PATH A: NEW BUSINESS --- */}
+        {mode === 'new' && (
+          <>
+            {step === 1 && <BusinessIdeaSetup onBack={handleBack} onNext={handleNext} />}
 
-              <div className='space-y-2'>
-                <Label>Tipe Bisnis *</Label>
-                <Controller
-                  name='businessType'
-                  control={control}
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger>
-                        <SelectValue placeholder='Pilih tipe bisnis' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {businessTypes.map((type) => (
-                          <SelectItem key={type.value} value={type.value}>
-                            <span className='flex items-center gap-2'>
-                              <span>{type.icon}</span>
-                              <span>{type.label}</span>
-                            </span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-              </div>
+            {step === 2 && <OpexSetup onBack={handleBack} onNext={handleNext} />}
 
-              <div className='space-y-2'>
-                <Label>Lokasi</Label>
-                <Input placeholder='Jakarta' {...register('location')} />
-              </div>
+            {step === 3 && <EquipmentSetup onBack={handleBack} onNext={handleNext} />}
 
-              <div className='space-y-2'>
-                <Label>Rata-rata Penjualan/Hari (opsional)</Label>
-                <div className='flex items-center gap-2'>
-                  <Controller
-                    name='targetDailySales'
-                    control={control}
-                    render={({ field }) => (
-                      <Slider
-                        min={5}
-                        max={200}
-                        step={5}
-                        value={[field.value ?? 30]}
-                        onValueChange={(v) => field.onChange(v[0])}
-                        className='flex-1'
-                      />
-                    )}
-                  />
-                  <span className='w-16 text-right text-sm font-medium'>
-                    {formValues.targetDailySales} /hari
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            {step === 4 && <FirstMenuSetup onBack={handleBack} onNext={handleNext} />}
+
+            {step === 5 && <PlanningSummary onComplete={handleComplete} onBack={handleBack} />}
+          </>
         )}
 
-        {/* Step 2: Bulk Menu Input */}
-        {step === 2 && (
-          <BulkMenuInput
-            onSave={(menus) => {
-              setOnboardingData((prev) => ({ ...prev, bulkMenus: menus }));
-              handleNext();
-            }}
-            onBack={handleBack}
-          />
-        )}
+        {/* --- PATH B: EXISTING BUSINESS --- */}
+        {mode === 'existing' && (
+          <>
+            {step === 1 && <ExistingBusinessSetup onNext={handleNext} onBack={handleBack} />}
 
-        {/* Step 3: OPEX */}
-        {step === 3 && (
-          <OpexSetup
-            businessType={formValues.businessType || ''}
-            operatingModel='cafe'
-            initialData={onboardingData.opexData}
-            onSave={(data) => {
-              setOnboardingData((prev) => ({ ...prev, opexData: data }));
-              handleNext();
-            }}
-            onBack={handleBack}
-          />
-        )}
+            {step === 2 && (
+              <BulkMenuInput
+                onSave={(menus) => {
+                  setValue('bulkMenus', menus);
+                  handleNext();
+                }}
+                onBack={handleBack}
+              />
+            )}
 
-        {/* Step 4: Summary */}
-        {step === 4 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className='text-center'>Setup Selesai! 🎉</CardTitle>
-              <CardDescription className='text-center'>
-                Anda siap menggunakan SajiPlan
-              </CardDescription>
-            </CardHeader>
-            <CardContent className='space-y-4'>
-              <div className='bg-muted/50 space-y-3 rounded-lg p-4'>
-                <div className='flex justify-between'>
-                  <span className='text-muted-foreground'>Bisnis</span>
-                  <span className='font-medium'>{formValues.businessName || '-'}</span>
-                </div>
-                <div className='flex justify-between'>
-                  <span className='text-muted-foreground'>Menu</span>
-                  <span className='font-medium'>{onboardingData.bulkMenus.length} item</span>
-                </div>
-                <div className='flex justify-between'>
-                  <span className='text-muted-foreground'>OPEX Bulanan</span>
-                  <span className='font-medium'>
-                    Rp {calculateOpexTotal().toLocaleString('id-ID')}
-                  </span>
-                </div>
-              </div>
+            {step === 3 && <OpexSetup onBack={handleBack} onNext={handleNext} />}
 
-              <div className='flex gap-3'>
-                <Button variant='outline' className='flex-1' onClick={handleBack}>
-                  <ArrowLeft className='mr-2 h-4 w-4' />
-                  Kembali
-                </Button>
-                <Button className='flex-1' size='lg' onClick={handleComplete}>
-                  Mulai Gunakan SajiPlan
-                  <ArrowRight className='ml-2 h-4 w-4' />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Navigation for Step 1 */}
-        {step === 1 && (
-          <div className='mt-6 flex gap-3'>
-            <Button variant='outline' className='flex-1' onClick={handleBack}>
-              <ArrowLeft className='mr-2 h-4 w-4' />
-              Kembali
-            </Button>
-            <Button className='flex-1' onClick={handleNext} disabled={!formValues.businessType}>
-              Lanjut
-              <ArrowRight className='ml-2 h-4 w-4' />
-            </Button>
-          </div>
+            {step === 4 && <OnboardingSuccess onBack={handleBack} onComplete={handleComplete} />}
+          </>
         )}
       </div>
-    );
-  }
-
-  return null;
+    </FormProvider>
+  );
 }

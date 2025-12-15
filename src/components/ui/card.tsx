@@ -7,7 +7,7 @@ function Card({ className, ...props }: React.ComponentProps<'div'>) {
     <div
       data-slot='card'
       className={cn(
-        'bg-card text-card-foreground flex flex-col gap-6 rounded-xl border shadow-sm',
+        'bg-card text-card-foreground flex flex-col rounded-xl border shadow-sm',
         // Add pt-6 to CardContent when no CardHeader exists
         '[&:not(:has([data-slot=card-header]))>[data-slot=card-content]]:pt-6',
         // Add pb-6 to CardContent when no CardFooter exists
@@ -63,7 +63,7 @@ function CardAction({ className, ...props }: React.ComponentProps<'div'>) {
 }
 
 function CardContent({ className, ...props }: React.ComponentProps<'div'>) {
-  return <div data-slot='card-content' className={cn('px-6', className)} {...props} />;
+  return <div data-slot='card-content' className={cn('p-4!', className)} {...props} />;
 }
 
 function CardFooter({ className, ...props }: React.ComponentProps<'div'>) {

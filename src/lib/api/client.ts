@@ -64,6 +64,13 @@ export const api = {
     getStats: () =>
       apiClient.get<DashboardStatsResponse>('/api/dashboard/stats').then((r) => r.data),
   },
+
+  // Onboarding
+  onboarding: {
+    getState: () => apiClient.get<{ data: any }>('/api/onboarding/state').then((r) => r.data),
+    saveState: (state: any) =>
+      apiClient.post<{ success: boolean }>('/api/onboarding/state', { state }).then((r) => r.data),
+  },
 };
 
 // Auth types

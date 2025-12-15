@@ -24,4 +24,15 @@ export const teamSizes = [
   { value: '6+', label: '6+ orang' },
 ];
 
-export const businessTypeValues = businessTypes.map((t) => t.value);
+// Extract values as a tuple for z.enum compatibility
+export const businessTypeValues = [
+  'coffee_shop',
+  'restaurant',
+  'food_stall',
+  'bakery',
+  'beverage_stall',
+  'dessert_shop',
+  'catering',
+  'cloud_kitchen',
+  'other',
+] as const;
