@@ -21,4 +21,6 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/iqbal-codes/fnb-os-web-app:${{ github.sha }}
+          tags: |
+            ghcr.io/iqbal-codes/fnb-os-web-app:latest
+            ghcr.io/iqbal-codes/fnb-os-web-app:${{ github.sha }}

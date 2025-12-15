@@ -16,7 +16,7 @@ spec:
         - name: ghcr-secret
       containers:
         - name: nextjs
-          image: ghcr.io/iqbal-codes/fnb-os-web-app:${{ github.sha }}
+          image: ghcr.io/iqbal-codes/fnb-os-web-app:latest
           ports:
             - containerPort: 3000
           env:
