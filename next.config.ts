@@ -52,6 +52,7 @@ const nextConfig: NextConfig = {
   // Enable React strict mode for better development experience
   reactStrictMode: true,
   reactCompiler: true,
+  output: 'standalone',
 
   // Image optimization config
   images: {

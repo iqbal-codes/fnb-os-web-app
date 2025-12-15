@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextjs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nextjs
+  template:
+    metadata:
+      labels:
+        app: nextjs
+    spec:
+      containers:
+        - name: nextjs
+          image: ghcr.io/iqbal-codes/fnb-os-web-app:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: PORT
+              value: '3000'
