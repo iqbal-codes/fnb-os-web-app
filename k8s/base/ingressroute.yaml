@@ -4,7 +4,7 @@ metadata:
   name: nextjs
 spec:
   entryPoints:
-    - websecure
+    - web
   routes:
     - match: Host(`fnb-os.iqbal-devs.xyz`)
       kind: Rule
