@@ -37,11 +37,13 @@ export function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <nav className='border-border/40 bg-background/95 supports-[backdrop-filter]:bg-background/80 safe-area-bottom fixed right-0 bottom-0 left-0 z-50 border-t backdrop-blur'>
+    <nav className='border-border/40 bg-background/95 supports-backdrop-filter:bg-background/80 safe-area-bottom fixed right-0 bottom-0 left-0 z-50 border-t backdrop-blur'>
       <div className='flex h-16 items-center justify-around px-2'>
         {navItems.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
+
+          console.log({ isActive, pathname, itemPath: item.href });
 
           return (
             <Link

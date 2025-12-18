@@ -6,7 +6,7 @@ import { createServerClient } from '@supabase/ssr';
 // Create the i18n middleware
 const intlMiddleware = createMiddleware(routing);
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Skip API and auth callback routes from i18n processing
   if (request.nextUrl.pathname.startsWith('/api') || request.nextUrl.pathname.startsWith('/auth')) {
     return NextResponse.next();
