@@ -60,14 +60,16 @@ export const equipmentItemSchema = z.object({
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const businessIdeaSchema = z.object({
-  businessName: z.string().optional(),
-  businessType: z.enum(businessTypeValues).optional(),
-  description: z.string().optional(),
-  location: z.string().optional(),
+  businessName: z
+    .string()
+    .max(60, 'Maksimal 60 karakter')
+    .transform((val) => val.trim())
+    .optional(),
+  businessType: z.enum(businessTypeValues as unknown as [string, ...string[]]),
+  city: z.string().optional(),
   operatingModel: z.string().optional(),
-  teamSize: z.string().optional(),
-  targetDailySales: z.number().min(1).max(500).optional(),
-  targetMargin: z.number().min(10).max(80).optional(),
+  operatingModelSecondary: z.string().optional(),
+  openDays: z.array(z.number().min(1).max(7)).default([1, 2, 3, 4, 5, 6, 7]),
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

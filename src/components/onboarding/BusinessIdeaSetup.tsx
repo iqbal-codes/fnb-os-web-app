@@ -1,11 +1,11 @@
-import { Building2, MapPin, Users } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { useFormContext, Controller } from 'react-hook-form';
+import { Check, ChevronsUpDown } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { NumberInput } from '@/components/ui/number-input';
 import {
   Select,
   SelectContent,
@@ -13,56 +13,134 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { businessTypes, operatingModels, teamSizes } from './constants';
-// Import type from parent if needed, or just use general context
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+
+import { cn } from '@/lib/utils';
+import { businessTypes, cities, operatingModels, daysOfWeek } from './constants';
 import type { OnboardingFormValues } from '@/components/onboarding/types';
 
 interface BusinessIdeaSetupProps {
-  onBack: () => void;
   onNext: () => void;
 }
 
-export function BusinessIdeaSetup({ onBack, onNext }: BusinessIdeaSetupProps) {
+export function BusinessIdeaSetup({ onNext }: BusinessIdeaSetupProps) {
   const {
     register,
     control,
+    trigger,
+    setValue,
+    getValues,
     formState: { errors },
   } = useFormContext<OnboardingFormValues>();
+
+  const [openType, setOpenType] = useState(false);
+  const [openCity, setOpenCity] = useState(false);
+
+  const handleContinue = async () => {
+    // 1. Validate form
+    const isValid = await trigger();
+    if (!isValid) return;
+
+    // 2. Handle Business Name auto-generation
+    const currentName = getValues('businessName');
+    if (!currentName || currentName.trim() === '') {
+      // Logic: If user leaves empty, auto-generate "Bisnis 1" (or increment if we had count)
+      setValue('businessName', 'Bisnis 1');
+    }
+
+    // 3. Proceed
+    onNext();
+  };
+
+  const selectedPrimaryModel = getValues('operatingModel');
+
+  // Filter secondary models to exclude the primary one
+  const secondaryOperatingModels = useMemo(() => {
+    return operatingModels.filter((m) => m.value !== selectedPrimaryModel);
+  }, [selectedPrimaryModel]);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Ceritakan ide bisnis Anda</CardTitle>
-        <CardDescription>Ini membantu AI memberikan rekomendasi</CardDescription>
+        <CardTitle>Ceritakan detail bisnis Anda</CardTitle>
+        <CardDescription>Informasi ini membantu AI menyesuaikan rekomendasi</CardDescription>
       </CardHeader>
-      <CardContent className='space-y-4'>
+      <CardContent className='space-y-6'>
+        {/* 1. Nama Bisnis (Optional) */}
         <div className='space-y-2'>
-          <Label>Nama Bisnis (opsional)</Label>
-          <Input placeholder='e.g., Kopi Nusantara' {...register('businessName')} />
+          <Label className='flex items-center justify-between'>
+            Nama Bisnis (opsional)
+            <span className='text-muted-foreground text-xs font-normal'>
+              Bisa diubah kapan saja
+            </span>
+          </Label>
+          <Input placeholder='Contoh: Kopi Kenangan' {...register('businessName')} />
+          {errors.businessName && (
+            <p className='text-destructive text-sm'>{errors.businessName.message}</p>
+          )}
         </div>
 
+        {/* 2. Tipe Bisnis (Required, Searchable) */}
         <div className='space-y-2'>
-          <Label>Tipe Bisnis *</Label>
+          <Label>
+            Tipe Bisnis <span className='text-destructive'>*</span>
+          </Label>
           <Controller
             name='businessType'
             control={control}
             render={({ field }) => (
-              <Select onValueChange={field.onChange} value={field.value}>
-                <SelectTrigger>
-                  <SelectValue placeholder='Pilih tipe bisnis' />
-                </SelectTrigger>
-                <SelectContent>
-                  {businessTypes.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
-                      <span className='flex items-center gap-2'>
-                        <span>{type.icon}</span>
-                        <span>{type.label}</span>
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={openType} onOpenChange={setOpenType}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant='outline'
+                    role='combobox'
+                    aria-expanded={openType}
+                    className='w-full justify-between'
+                  >
+                    {field.value
+                      ? businessTypes.find((type) => type.value === field.value)?.label
+                      : 'Pilih tipe bisnis...'}
+                    <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className='w-[--radix-popover-trigger-width] p-0' align='start'>
+                  <Command>
+                    <CommandInput placeholder='Cari tipe bisnis...' />
+                    <CommandList>
+                      <CommandEmpty>Tipe bisnis tidak ditemukan.</CommandEmpty>
+                      <CommandGroup>
+                        {businessTypes.map((type) => (
+                          <CommandItem
+                            key={type.value}
+                            value={type.label} // Create fuzzy search on label
+                            onSelect={() => {
+                              field.onChange(type.value);
+                              setOpenType(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                'mr-2 h-4 w-4',
+                                field.value === type.value ? 'opacity-100' : 'opacity-0',
+                              )}
+                            />
+                            <span className='mr-2'>{type.icon}</span>
+                            {type.label}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             )}
           />
           {errors.businessType && (
@@ -70,33 +148,72 @@ export function BusinessIdeaSetup({ onBack, onNext }: BusinessIdeaSetupProps) {
           )}
         </div>
 
+        {/* 3. Kota/Kabupaten (Searchable) */}
         <div className='space-y-2'>
-          <Label>Deskripsi Singkat</Label>
-          <Textarea
-            placeholder='Ceritakan konsep bisnis Anda...'
-            rows={2}
-            {...register('description')}
+          <Label>Kota/Kabupaten</Label>
+          <Controller
+            name='city'
+            control={control}
+            render={({ field }) => (
+              <Popover open={openCity} onOpenChange={setOpenCity}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant='outline'
+                    role='combobox'
+                    aria-expanded={openCity}
+                    className='w-full justify-between font-normal'
+                  >
+                    {field.value
+                      ? cities.find((c) => c.value === field.value)?.label
+                      : 'Cari kota/kabupaten...'}
+                    <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className='w-[--radix-popover-trigger-width] p-0' align='start'>
+                  <Command>
+                    <CommandInput placeholder='Cari kota...' />
+                    <CommandList>
+                      <CommandEmpty>Kota tidak ditemukan.</CommandEmpty>
+                      <CommandGroup>
+                        {cities.map((city) => (
+                          <CommandItem
+                            key={city.value}
+                            value={city.label}
+                            onSelect={() => {
+                              field.onChange(city.value);
+                              setOpenCity(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                'mr-2 h-4 w-4',
+                                field.value === city.value ? 'opacity-100' : 'opacity-0',
+                              )}
+                            />
+                            {city.label}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            )}
           />
         </div>
 
-        <div className='grid grid-cols-2 gap-4'>
+        {/* 4. Model Operasi (Primary + Secondary) */}
+        <div className='space-y-4'>
+          {/* Primary Model */}
           <div className='space-y-2'>
-            <Label className='flex items-center gap-1'>
-              <MapPin className='h-3 w-3' /> Lokasi
-            </Label>
-            <Input placeholder='Jakarta' {...register('location')} />
-          </div>
-          <div className='space-y-2'>
-            <Label className='flex items-center gap-1'>
-              <Building2 className='h-3 w-3' /> Model Operasi
-            </Label>
+            <Label>Model Operasi Utama</Label>
             <Controller
               name='operatingModel'
               control={control}
               render={({ field }) => (
                 <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger>
-                    <SelectValue placeholder='Pilih' />
+                    <SelectValue placeholder='Pilih model operasi' />
                   </SelectTrigger>
                   <SelectContent>
                     {operatingModels.map((model) => (
@@ -109,25 +226,31 @@ export function BusinessIdeaSetup({ onBack, onNext }: BusinessIdeaSetupProps) {
               )}
             />
           </div>
-        </div>
 
-        <div className='grid grid-cols-2 gap-4'>
+          {/* Secondary Model (Collapsible concept or just visible optional) */}
           <div className='space-y-2'>
-            <Label className='flex items-center gap-1'>
-              <Users className='h-3 w-3' /> Ukuran Tim
+            <Label className='text-muted-foreground text-sm font-normal'>
+              Model Tambahan (Opsional)
             </Label>
             <Controller
-              name='teamSize'
+              name='operatingModelSecondary'
               control={control}
               render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  disabled={!selectedPrimaryModel}
+                >
                   <SelectTrigger>
-                    <SelectValue placeholder='Pilih' />
+                    <SelectValue placeholder='Pilih model tambahan (opsional)' />
                   </SelectTrigger>
                   <SelectContent>
-                    {teamSizes.map((size) => (
-                      <SelectItem key={size.value} value={size.value}>
-                        {size.label}
+                    <SelectItem value='none' className='text-muted-foreground font-normal italic'>
+                      Tidak ada
+                    </SelectItem>
+                    {secondaryOperatingModels.map((model) => (
+                      <SelectItem key={model.value} value={model.value}>
+                        {model.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -135,31 +258,49 @@ export function BusinessIdeaSetup({ onBack, onNext }: BusinessIdeaSetupProps) {
               )}
             />
           </div>
-          <div className='space-y-2'>
-            <Label>Target Penjualan/Hari</Label>
-            <Controller
-              name='targetDailySales'
-              control={control}
-              render={({ field }) => (
-                <NumberInput
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  min={1}
-                  max={500}
-                  thousandSeparator='.'
-                  decimalSeparator=','
-                  placeholder='30'
-                />
-              )}
-            />
-          </div>
         </div>
 
-        <div className='mt-6 flex gap-3'>
-          <Button variant='outline' className='flex-1' onClick={onBack} type='button'>
-            Kembali
-          </Button>
-          <Button className='flex-1' onClick={onNext}>
+        {/* 5. Hari Buka (Days Selector) */}
+        <div className='space-y-2'>
+          <Label>Hari Buka</Label>
+          <Controller
+            name='openDays'
+            control={control}
+            render={({ field }) => (
+              <div className='flex flex-wrap gap-2'>
+                {daysOfWeek.map((day) => {
+                  const isSelected = field.value?.includes(day.value);
+                  return (
+                    <div
+                      key={day.value}
+                      onClick={() => {
+                        const current = field.value || [];
+                        const newValue = isSelected
+                          ? current.filter((v) => v !== day.value)
+                          : [...current, day.value];
+                        field.onChange(newValue.sort((a, b) => a - b));
+                      }}
+                      className={cn(
+                        'cursor-pointer rounded-full border px-4 py-1.5 text-sm font-medium transition-all select-none',
+                        isSelected
+                          ? 'bg-primary text-primary-foreground border-primary hover:bg-primary/90'
+                          : 'bg-background text-muted-foreground border-input hover:bg-accent hover:text-accent-foreground',
+                      )}
+                    >
+                      {day.label}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          />
+          <p className='text-muted-foreground text-xs'>
+            Tentukan hari operasional Anda untuk perhitungan BEP yang lebih akurat.
+          </p>
+        </div>
+
+        <div className='mt-6 pt-4'>
+          <Button className='w-full' onClick={handleContinue}>
             Lanjut
           </Button>
         </div>

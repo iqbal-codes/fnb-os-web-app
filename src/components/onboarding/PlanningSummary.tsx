@@ -73,12 +73,10 @@ export function PlanningSummary({ onComplete, onBack }: PlanningSummaryProps) {
   const menuData = useWatch({ control, name: 'menuData' });
   const opexData = useWatch({ control, name: 'opexData' });
   const equipmentData = useWatch({ control, name: 'equipmentData' });
-  const targetDailySales = useWatch({ control, name: 'targetDailySales' });
-
   // State
   const [assumptions, setAssumptions] = useState<FinancialAssumptions>({
     ...DEFAULT_ASSUMPTIONS,
-    cupsTargetPerDay: targetDailySales || 30,
+    cupsTargetPerDay: 30, // Default since input removed
   });
   const [shoppingPlanOpen, setShoppingPlanOpen] = useState(false);
 

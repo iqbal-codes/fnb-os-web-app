@@ -68,12 +68,10 @@ export interface OnboardingFormValues {
   // Business Idea
   businessName?: string;
   businessType?: BusinessType;
-  description?: string;
-  location?: string;
-  operatingModel?: string;
-  teamSize?: string;
-  targetDailySales?: number;
-  targetMargin?: number;
+  city?: string;
+  operatingModel?: string; // Primary
+  operatingModelSecondary?: string; // Secondary (Optional)
+  openDays?: number[]; // [1..7]
   // Step Data
   opexData: OpexItem[];
   equipmentData: EquipmentItem[];

@@ -1,38 +1,58 @@
+// Business Types with icons
 export const businessTypes = [
-  { value: 'coffee_shop', label: 'Coffee Shop / Cafe', icon: '☕' },
-  { value: 'restaurant', label: 'Restaurant', icon: '🍽️' },
-  { value: 'food_stall', label: 'Food Stall / Warung', icon: '🏪' },
-  { value: 'bakery', label: 'Bakery / Pastry', icon: '🥐' },
-  { value: 'beverage_stall', label: 'Beverage Stall', icon: '🧋' },
-  { value: 'dessert_shop', label: 'Dessert Shop', icon: '🍰' },
-  { value: 'catering', label: 'Catering', icon: '🍱' },
-  { value: 'cloud_kitchen', label: 'Cloud Kitchen', icon: '👨‍🍳' },
-  { value: 'other', label: 'Other', icon: '🍴' },
+  { value: 'beverage', label: 'Minuman (Kopi, Teh, Jus)', icon: '🥤' },
+  { value: 'main_course', label: 'Makanan Utama (Nasi, Mie, Ayam)', icon: '🍛' },
+  { value: 'snack', label: 'Snack & Cemilan', icon: '🍟' },
+  { value: 'bakery', label: 'Bakery & Dessert', icon: '🍰' },
+  { value: 'catering', label: 'Catering / Preorder', icon: '🍱' },
+  { value: 'frozen', label: 'Frozen Food', icon: '🧊' },
+  { value: 'mix', label: 'Mix (Makanan + Minuman)', icon: '🍽️' },
 ] as const;
 
+// Operating Model Primary Options
 export const operatingModels = [
-  { value: 'home_based', label: 'Home-based (Rumahan)' },
-  { value: 'booth', label: 'Booth / Stall' },
-  { value: 'cafe', label: 'Café / Shop' },
-  { value: 'cloud_kitchen', label: 'Cloud Kitchen' },
+  { value: 'takeaway_booth', label: 'Takeaway / Booth / Gerobak' },
+  { value: 'dine_in', label: 'Dine-in (Warung / Cafe)' },
+  { value: 'delivery', label: 'Delivery Platform Online' },
+  { value: 'preorder', label: 'Preorder (PO)' },
+  { value: 'reseller', label: 'Titip Jual / Reseller' },
+  { value: 'catering_event', label: 'Catering / Event' },
+] as const;
+
+// Major Cities (MVP)
+export const cities = [
+  { value: 'jakarta', label: 'Jakarta' },
+  { value: 'bogor', label: 'Bogor' },
+  { value: 'depok', label: 'Depok' },
+  { value: 'tangerang', label: 'Tangerang' },
+  { value: 'bekasi', label: 'Bekasi' },
+  { value: 'bandung', label: 'Bandung' },
+  { value: 'surabaya', label: 'Surabaya' },
+  { value: 'medan', label: 'Medan' },
+  { value: 'semarang', label: 'Semarang' },
+  { value: 'makassar', label: 'Makassar' },
+  { value: 'yogyakarta', label: 'Yogyakarta' },
+  { value: 'bali', label: 'Bali' },
 ];
 
-export const teamSizes = [
-  { value: 'solo', label: 'Just me' },
-  { value: '2-3', label: '2-3 orang' },
-  { value: '4-5', label: '4-5 orang' },
-  { value: '6+', label: '6+ orang' },
+// Days of Week
+export const daysOfWeek = [
+  { value: 1, label: 'Sen' },
+  { value: 2, label: 'Sel' },
+  { value: 3, label: 'Rab' },
+  { value: 4, label: 'Kam' },
+  { value: 5, label: 'Jum' },
+  { value: 6, label: 'Sab' },
+  { value: 7, label: 'Min' },
 ];
 
 // Extract values as a tuple for z.enum compatibility
 export const businessTypeValues = [
-  'coffee_shop',
-  'restaurant',
-  'food_stall',
+  'beverage',
+  'main_course',
+  'snack',
   'bakery',
-  'beverage_stall',
-  'dessert_shop',
   'catering',
-  'cloud_kitchen',
-  'other',
+  'frozen',
+  'mix',
 ] as const;
