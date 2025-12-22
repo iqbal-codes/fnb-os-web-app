@@ -27,7 +27,7 @@ export const useBusinessStore = create<BusinessState>()(
       clearBusiness: () => set({ currentBusiness: null, businesses: [] }),
     }),
     {
-      name: 'sajiplan-business',
+      name: 'efenbi-business',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         currentBusiness: state.currentBusiness,

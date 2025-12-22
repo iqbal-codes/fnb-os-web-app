@@ -61,7 +61,6 @@ const EquipmentRow = ({ index, remove, canDelete = true }: EquipmentRowProps) =>
               <NumberInput
                 value={value}
                 onValueChange={onChange}
-                placeholder='0'
                 prefix='Rp '
                 thousandSeparator='.'
                 decimalSeparator=','
@@ -149,7 +148,7 @@ export function EquipmentSetup({ onBack, onNext }: EquipmentSetupProps) {
     append({
       id: `custom-${Date.now()}`,
       name: '',
-      life_span_years: 5,
+      life_span_years: 0,
       estimated_price: 0,
       priority: 'optional',
       isAiSuggested: false,

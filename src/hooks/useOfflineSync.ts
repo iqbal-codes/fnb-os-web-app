@@ -26,7 +26,7 @@ interface OrderItem {
   subtotal: number;
 }
 
-const STORAGE_KEY = 'sajiplan_offline_orders';
+const STORAGE_KEY = 'efenbi_offline_orders';
 
 /**
  * Get pending orders from localStorage

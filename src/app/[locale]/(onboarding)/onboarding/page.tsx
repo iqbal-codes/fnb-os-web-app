@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -83,7 +83,7 @@ export default function OnboardingPage() {
 
   // Load state on mount - sync with Supabase and LocalStorage
   useEffect(() => {
-    const restoreState = async () => {
+    const restoreState = () => {
       // 0. Wait for Auth to initialize
       if (isAuthLoading) return;
 
@@ -163,19 +163,22 @@ export default function OnboardingPage() {
     }
   }, [step, maxReachedStep, router, pathname, isHydrated]);
 
-  const updateUrl = (newStep: number) => {
-    const params = new URLSearchParams(searchParams);
-    params.set('step', newStep.toString());
-    router.push(`${pathname}?${params.toString()}`);
-  };
+  const updateUrl = useCallback(
+    (newStep: number) => {
+      const params = new URLSearchParams(searchParams);
+      params.set('step', newStep.toString());
+      router.push(`${pathname}?${params.toString()}`);
+    },
+    [searchParams, router, pathname],
+  );
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     if (step > 1) {
       updateUrl(step - 1);
     }
-  };
+  }, [step, updateUrl]);
 
-  const validateStep = async () => {
+  const validateStep = useCallback(async () => {
     let isValid = false;
     const values = getValues();
 
@@ -209,9 +212,9 @@ export default function OnboardingPage() {
         isValid = true;
     }
     return isValid;
-  };
+  }, [step, getValues, trigger]);
 
-  const handleNext = async () => {
+  const handleNext = useCallback(async () => {
     if (step < TOTAL_STEPS) {
       const isValid = await validateStep();
       if (!isValid) return;
@@ -220,9 +223,9 @@ export default function OnboardingPage() {
       setMaxReachedStep(Math.max(maxReachedStep, nextStep));
       updateUrl(nextStep);
     }
-  };
+  }, [step, validateStep, maxReachedStep, updateUrl, setMaxReachedStep]);
 
-  const handleComplete = async () => {
+  const handleComplete = useCallback(async () => {
     const values = getValues();
     try {
       await createBusiness.mutateAsync({
@@ -240,7 +243,7 @@ export default function OnboardingPage() {
       const message = error instanceof Error ? error.message : 'Failed to create business';
       toast.error(message);
     }
-  };
+  }, [getValues, createBusiness, router]);
 
   // --- Renderers ---
 

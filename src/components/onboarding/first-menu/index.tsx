@@ -55,7 +55,7 @@ FirstMenuHeader.displayName = 'FirstMenuHeader';
 
 export function FirstMenuSetup({ onNext, onBack }: FirstMenuSetupProps) {
   const [isCalculated, setIsCalculated] = useState(false);
-  const [selectedMargin, setSelectedMargin] = useState(50);
+  const [selectedMargin, setSelectedMargin] = useState(60);
   const [ingredientBreakdown, setIngredientBreakdown] = useState<IngredientCostBreakdown[]>([]);
 
   // Drawer State
@@ -220,7 +220,9 @@ export function FirstMenuSetup({ onNext, onBack }: FirstMenuSetupProps) {
                         )}
                       </div>
                       <div className='overflow-hidden'>
-                        <p className='truncate font-medium'>{field.name}</p>
+                        <p className='truncate font-medium'>
+                          {field.name} @ ~Rp {Math.ceil(cost).toLocaleString('id-ID')}
+                        </p>
                         <p className='text-muted-foreground text-xs'>
                           {field.usageQuantity} {field.usageUnit} • Harga: {field.buyingQuantity}{' '}
                           {field.buyingUnit} @ {field.buyingPrice?.toLocaleString('id-ID')}
@@ -228,9 +230,6 @@ export function FirstMenuSetup({ onNext, onBack }: FirstMenuSetupProps) {
                       </div>
                     </div>
                     <div className='flex items-center gap-1'>
-                      <div className='mr-2 text-xs font-semibold'>
-                        ~Rp {Math.ceil(cost).toLocaleString('id-ID')}
-                      </div>
                       <Button
                         size='icon'
                         variant='ghost'

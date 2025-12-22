@@ -34,7 +34,7 @@ export const useAuthStore = create<AuthState>()(
       logout: () => set({ user: null, business: null }),
     }),
     {
-      name: 'sajiplan-auth',
+      name: 'efenbi-auth',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         user: state.user,

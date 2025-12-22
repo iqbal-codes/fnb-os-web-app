@@ -7,6 +7,7 @@ import { Toaster } from 'sonner';
 
 import { routing } from '@/i18n/routing';
 import { QueryProvider } from '@/components/providers/QueryProvider';
+import { AuthProvider } from '@/components/providers/AuthProvider';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
 // Note: OnlineStatusProvider and OfflineIndicator temporarily disabled
 import '@/app/globals.css';
@@ -78,11 +79,13 @@ export default async function LocaleLayout({ children, params }: Props) {
         >
           <NextIntlClientProvider messages={messages}>
             <QueryProvider>
-              {/* <OnlineStatusProvider> */}
-              {/* <OfflineIndicator /> */}
-              {children}
-              <Toaster position='top-center' richColors />
-              {/* </OnlineStatusProvider> */}
+              <AuthProvider>
+                {/* <OnlineStatusProvider> */}
+                {/* <OfflineIndicator /> */}
+                {children}
+                <Toaster position='top-center' richColors />
+                {/* </OnlineStatusProvider> */}
+              </AuthProvider>
             </QueryProvider>
           </NextIntlClientProvider>
         </ThemeProvider>

@@ -25,16 +25,7 @@ export function FormPersistence({
   const { mutate: saveState } = useUpdateOnboardingState();
 
   useEffect(() => {
-    // 1. Cleanup old generic key if it exists
-    if (localStorage.getItem('EFENBI_ONBOARDING_STATE')) {
-      localStorage.removeItem('EFENBI_ONBOARDING_STATE');
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!enabled) return;
-    if (mode === 'selection' && step === 1) return;
-    if (!userId) return;
+    if (!userId || !enabled) return;
 
     const state = {
       mode,
@@ -57,7 +48,7 @@ export function FormPersistence({
     // 3. Save to Supabase via API (Debounced)
     const timer = setTimeout(() => {
       saveState(state);
-    }, 1000);
+    }, 3000);
 
     return () => clearTimeout(timer);
   }, [mode, step, formValues, maxReachedStep, userId, saveState, enabled]);

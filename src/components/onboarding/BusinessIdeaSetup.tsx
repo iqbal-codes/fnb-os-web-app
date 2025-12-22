@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { useFormContext, Controller } from 'react-hook-form';
+import { useMemo, useState, memo } from 'react';
+import { useFormContext, Controller, useWatch } from 'react-hook-form';
 import { Check, ChevronsUpDown } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -31,9 +31,8 @@ interface BusinessIdeaSetupProps {
   onNext: () => void;
 }
 
-export function BusinessIdeaSetup({ onNext }: BusinessIdeaSetupProps) {
+function BusinessIdeaSetupComponent({ onNext }: BusinessIdeaSetupProps) {
   const {
-    register,
     control,
     trigger,
     setValue,
@@ -41,31 +40,20 @@ export function BusinessIdeaSetup({ onNext }: BusinessIdeaSetupProps) {
     formState: { errors },
   } = useFormContext<OnboardingFormValues>();
 
+  console.log('rerender');
+
   const [openType, setOpenType] = useState(false);
   const [openCity, setOpenCity] = useState(false);
 
-  const handleContinue = async () => {
-    // 1. Validate form
-    const isValid = await trigger();
-    if (!isValid) return;
+  // Removed unused useWatch to prevent unnecessary re-renders
+  // const businessName = useWatch({ control, name: 'businessName' });
 
-    // 2. Handle Business Name auto-generation
-    const currentName = getValues('businessName');
-    if (!currentName || currentName.trim() === '') {
-      // Logic: If user leaves empty, auto-generate "Bisnis 1" (or increment if we had count)
-      setValue('businessName', 'Bisnis 1');
-    }
+  // const selectedPrimaryModel = getValues('operatingModel');
 
-    // 3. Proceed
-    onNext();
-  };
-
-  const selectedPrimaryModel = getValues('operatingModel');
-
-  // Filter secondary models to exclude the primary one
-  const secondaryOperatingModels = useMemo(() => {
-    return operatingModels.filter((m) => m.value !== selectedPrimaryModel);
-  }, [selectedPrimaryModel]);
+  // // Filter secondary models to exclude the primary one
+  // const secondaryOperatingModels = useMemo(() => {
+  //   return operatingModels.filter((m) => m.value !== selectedPrimaryModel);
+  // }, [selectedPrimaryModel]);
 
   return (
     <Card>
@@ -82,7 +70,11 @@ export function BusinessIdeaSetup({ onNext }: BusinessIdeaSetupProps) {
               Bisa diubah kapan saja
             </span>
           </Label>
-          <Input placeholder='Contoh: Kopi Kenangan' {...register('businessName')} />
+          <Controller
+            name='businessName'
+            control={control}
+            render={({ field }) => <Input placeholder='Contoh: Kopi Kenangan' {...field} />}
+          />
           {errors.businessName && (
             <p className='text-destructive text-sm'>{errors.businessName.message}</p>
           )}
@@ -304,7 +296,7 @@ export function BusinessIdeaSetup({ onNext }: BusinessIdeaSetupProps) {
         </div>
 
         <div className='mt-6 pt-4'>
-          <Button className='w-full' onClick={handleContinue}>
+          <Button className='w-full' onClick={onNext}>
             Lanjut
           </Button>
         </div>
@@ -312,3 +304,5 @@ export function BusinessIdeaSetup({ onNext }: BusinessIdeaSetupProps) {
     </Card>
   );
 }
+
+export const BusinessIdeaSetup = memo(BusinessIdeaSetupComponent);

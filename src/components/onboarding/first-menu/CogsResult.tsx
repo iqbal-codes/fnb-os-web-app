@@ -57,26 +57,8 @@ export function CogsResult({
       {/* Margin Selector & Price Card */}
       <Card>
         <CardContent className='space-y-4 p-4'>
-          {/* Margin Chip Selector */}
-          <div className='space-y-2'>
-            <Label className='text-sm font-medium'>Pilih Target Margin</Label>
-            <div className='flex flex-wrap gap-2'>
-              {marginOptions.map((margin) => (
-                <Button
-                  key={margin}
-                  variant={selectedMargin === margin ? 'default' : 'outline'}
-                  size='sm'
-                  className='min-w-[60px]'
-                  onClick={() => onMarginChange(margin)}
-                >
-                  {margin}%
-                </Button>
-              ))}
-            </div>
-          </div>
-
           {/* Suggested Price */}
-          <div className='border-t pt-4 text-center'>
+          <div className='text-center'>
             <p className='text-muted-foreground mb-1 text-sm'>
               Rekomendasi Harga Jual (Margin {selectedMargin}%)
             </p>
