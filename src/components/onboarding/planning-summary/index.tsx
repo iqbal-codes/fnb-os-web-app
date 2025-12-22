@@ -7,13 +7,19 @@ import { useFormContext, useWatch } from 'react-hook-form';
 import type { OnboardingFormValues } from '@/components/onboarding/types';
 
 import {
-  FinancialAssumptions,
-  DEFAULT_ASSUMPTIONS,
-  calculateFinancialMetrics,
+  calculateCapexDepreciationMonthly,
+  calculateFixedCostMonthly,
+  calculateOperatingDaysPerMonth,
+  calculatePriceFromCOGS,
+  calculateContributionMargin,
+  calculateBEP,
+  calculateTargetSafe,
+  calculatePaybackFromTargetSafe,
   generateEnhancedShoppingPlan,
   validateIngredientData,
-  generateRoundedPriceOptions,
-  simulatePrice,
+  PRICING_MODES,
+  DEFAULT_PRICING_MODE,
+  PricingMode,
 } from '@/lib/financialCalculations';
 import { calculateMenuCOGS } from '@/lib/businessLogic';
 import { calculateMonthlyOpex } from '@/lib/onboarding/calculations';
@@ -23,7 +29,7 @@ import { KpiCards } from './KpiCards';
 import { FinancialAnalysis } from './FinancialAnalysis';
 import { MenuPreview } from './MenuPreview';
 import { ShoppingPlanCard } from './ShoppingPlanCard';
-import { AISuggestionCards } from '../AISuggestionCards';
+import { PricingModeSelector } from './PricingModeSelector';
 
 interface PlanningSummaryProps {
   onComplete: () => void;
@@ -32,73 +38,89 @@ interface PlanningSummaryProps {
 
 export function PlanningSummary({ onComplete, onBack }: PlanningSummaryProps) {
   // Form context
-  const { control, setValue } = useFormContext<OnboardingFormValues>();
+  const { control } = useFormContext<OnboardingFormValues>();
 
   const businessName = useWatch({ control, name: 'businessName' });
   const menuData = useWatch({ control, name: 'menuData' });
   const opexData = useWatch({ control, name: 'opexData' });
   const equipmentData = useWatch({ control, name: 'equipmentData' });
-  // State
-  const [assumptions, setAssumptions] = useState<FinancialAssumptions>({
-    ...DEFAULT_ASSUMPTIONS,
-    cupsTargetPerDay: 30, // Default since input removed
-  });
+  const openDays = useWatch({ control, name: 'openDays' }) || [1, 2, 3, 4, 5, 6, 7];
+
+  // Pricing mode state (user-selectable)
+  const [pricingMode, setPricingMode] = useState<PricingMode>(DEFAULT_PRICING_MODE);
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Calculations
+  // System-Driven Calculations (Read-only)
   // ─────────────────────────────────────────────────────────────────────────────
 
-  // OPEX total (normalized to monthly)
+  // 1. COGS from menu ingredients
+  const cogsPerPortion = menuData?.estimatedCogs || calculateMenuCOGS(menuData?.ingredients || []);
+
+  // 2. Recommended price derived from COGS and selected pricing mode
+  const recommendedPrice = calculatePriceFromCOGS(cogsPerPortion, pricingMode);
+
+  // 3. Gross profit per portion (before operational costs)
+  const grossProfitPerPortion = recommendedPrice - cogsPerPortion;
+
+  // 4. OPEX monthly total
   const opexMonthly = calculateMonthlyOpex(opexData || []);
 
-  // Equipment total
-  const equipmentTotal = (equipmentData || []).reduce((sum, eq) => sum + eq.estimated_price, 0);
+  // 5. CAPEX depreciation monthly
+  const capexDepreciationMonthly = calculateCapexDepreciationMonthly(equipmentData || []);
 
-  // COGS
-  const cogsPerPortion = menuData?.estimatedCogs || calculateMenuCOGS(menuData?.ingredients || []);
-  const sellingPrice = menuData?.suggestedPrice || cogsPerPortion * 2.5;
+  // 6. Fixed cost monthly (OPEX + depreciation)
+  const fixedCostMonthly = calculateFixedCostMonthly(opexMonthly, capexDepreciationMonthly);
 
-  // Calculate all metrics
-  const metrics = calculateFinancialMetrics(
-    sellingPrice,
+  // 7. Operating days per month
+  const openDaysCount = openDays.length;
+  const operatingDaysPerMonth = calculateOperatingDaysPerMonth(openDaysCount);
+
+  // 8. Contribution margin (no channel fee by default)
+  const channelFeePercent = 0; // Default in onboarding
+  const channelFeePerUnit = recommendedPrice * (channelFeePercent / 100);
+  const contributionMargin = calculateContributionMargin(
+    recommendedPrice,
     cogsPerPortion,
-    opexMonthly,
-    equipmentTotal,
-    assumptions,
+    channelFeePerUnit,
   );
 
-  // Validate data completeness
+  // 9. BEP calculation
+  const bepResult = calculateBEP(fixedCostMonthly, contributionMargin, operatingDaysPerMonth);
+
+  // 10. Target Aman (BEP + 20% buffer)
+  const targetSafePerDay = calculateTargetSafe(bepResult.bepUnitsDay);
+  // const targetSafePerMonth = targetSafePerDay * operatingDaysPerMonth;
+
+  // 11. CAPEX total
+  const capexTotal = (equipmentData || [])
+    .filter((eq) => eq.isSelected)
+    .reduce((sum, eq) => sum + eq.estimated_price, 0);
+
+  // 12. Payback/ROI based on Target Aman
+  const paybackResult = calculatePaybackFromTargetSafe(
+    targetSafePerDay,
+    operatingDaysPerMonth,
+    contributionMargin,
+    fixedCostMonthly,
+    capexTotal,
+  );
+
+  // 13. Validate data completeness
   const validation = validateIngredientData(menuData?.ingredients || []);
 
-  // Shopping plan
+  // 14. Shopping plan based on Target Aman
   const shoppingPlan = generateEnhancedShoppingPlan(
     menuData?.ingredients || [],
-    assumptions.cupsTargetPerDay,
+    targetSafePerDay,
     7,
   );
 
-  // Rounded price options
-  const roundedPrices = generateRoundedPriceOptions(sellingPrice);
-  const hasNonRoundedPrice = sellingPrice % 1000 !== 0;
-
   // ─────────────────────────────────────────────────────────────────────────────
-  // Handlers
+  // Computed Display Values
   // ─────────────────────────────────────────────────────────────────────────────
 
-  const handleApplyPrice = (newPrice: number) => {
-    setValue('menuData.suggestedPrice', newPrice);
-  };
-
-  const handleSimulatePrice = (price: number) => {
-    return simulatePrice(
-      price,
-      sellingPrice,
-      cogsPerPortion,
-      opexMonthly,
-      equipmentTotal,
-      assumptions,
-    );
-  };
+  const pricingModeLabel = PRICING_MODES[pricingMode].label;
+  const wastePercent = 0; // Default in onboarding
 
   return (
     <div className='space-y-6'>
@@ -108,64 +130,77 @@ export function PlanningSummary({ onComplete, onBack }: PlanningSummaryProps) {
           <CheckCircle className='text-primary h-8 w-8' />
         </div>
         <h2 className='text-xl font-bold'>Selamat, {businessName || 'Pengusaha'}! 🎉</h2>
-        <p className='text-muted-foreground'>Berikut ringkasan perencanaan bisnis Anda</p>
+        <p className='text-muted-foreground'>Berikut ringkasan perencanaan bisnis Anda.</p>
       </div>
 
-      {/* Warnings */}
+      {/* Validation Warnings */}
       <ValidationWarnings
         validation={validation}
-        isNegativeProfit={metrics.isNegativeProfit}
-        netProfitPerPortion={metrics.netProfitPerPortion}
+        isNegativeProfit={contributionMargin <= 0}
         cogsPerPortion={cogsPerPortion}
-        opexPerPortion={metrics.opexPerPortion}
         onBack={onBack}
       />
 
-      {/* KPI Cards */}
+      {/* KPI Cards (4 cards) */}
       <KpiCards
         cogsPerPortion={cogsPerPortion}
-        sellingPrice={sellingPrice}
-        netProfitPerPortion={metrics.netProfitPerPortion}
-        netMarginPercent={metrics.netMarginPercent}
-        grossMarginPercent={metrics.grossMarginPercent}
-        isNegativeProfit={metrics.isNegativeProfit}
-        roundedPrices={roundedPrices}
-        hasNonRoundedPrice={hasNonRoundedPrice}
-        onApplyPrice={handleApplyPrice}
+        recommendedPrice={recommendedPrice}
+        grossProfitPerPortion={grossProfitPerPortion}
+        bepUnitsPerDay={bepResult.bepUnitsDay}
+        isBepInfinity={bepResult.isBepInfinity}
+        pricingModeLabel={pricingModeLabel}
+      />
+
+      {/* Pricing Mode Selector */}
+      <PricingModeSelector
+        selectedMode={pricingMode}
+        onModeChange={setPricingMode}
+        cogsPerPortion={cogsPerPortion}
+        fixedCostMonthly={fixedCostMonthly}
+        targetSafePerDay={targetSafePerDay}
+        operatingDaysPerMonth={operatingDaysPerMonth}
       />
 
       {/* Financial Analysis */}
       <FinancialAnalysis
-        metrics={metrics}
-        assumptions={assumptions}
-        onAssumptionsChange={setAssumptions}
-        sellingPrice={sellingPrice}
-        cogsPerPortion={cogsPerPortion}
+        bepUnitsPerDay={bepResult.bepUnitsDay}
+        bepUnitsPerMonth={bepResult.bepUnitsMonth}
+        isBepInfinity={bepResult.isBepInfinity}
+        fixedCostMonthly={fixedCostMonthly}
         opexMonthly={opexMonthly}
-        equipmentTotal={equipmentTotal}
+        capexDepreciationMonthly={capexDepreciationMonthly}
+        contributionMargin={contributionMargin}
+        targetSafePerDay={targetSafePerDay}
+        paybackMonths={paybackResult.paybackMonths}
+        isPaybackInfinity={paybackResult.isPaybackInfinity}
+        estimatedProfitMonth={paybackResult.estimatedProfitMonth}
+        capexTotal={capexTotal}
+        openDaysCount={openDaysCount}
+        operatingDaysPerMonth={operatingDaysPerMonth}
+        pricingModeLabel={pricingModeLabel}
+        channelFeePercent={channelFeePercent}
+        wastePercent={wastePercent}
       />
 
       {/* Menu Preview */}
       <MenuPreview
         menuName={menuData?.name}
+        recommendedPrice={recommendedPrice}
         cogsPerPortion={cogsPerPortion}
-        netProfitPerPortion={metrics.netProfitPerPortion}
-        sellingPrice={sellingPrice}
+        grossProfitPerPortion={grossProfitPerPortion}
       />
 
       {/* Shopping Plan */}
-      <ShoppingPlanCard
-        shoppingPlan={shoppingPlan}
-        cupsTargetPerDay={assumptions.cupsTargetPerDay}
-      />
+      <ShoppingPlanCard shoppingPlan={shoppingPlan} targetSafePerDay={targetSafePerDay} />
 
-      {/* AI Suggestions */}
-      <AISuggestionCards
-        currentPrice={sellingPrice}
+      {/* System Suggestions (Rule-based, not AI) */}
+      {/* <SystemSuggestions
         topCostDriver={shoppingPlan.topCostDrivers[0] || null}
-        simulatePrice={handleSimulatePrice}
-        onApplyPrice={handleApplyPrice}
-      />
+        bepUnitsPerDay={bepResult.bepUnitsDay}
+        isBepInfinity={bepResult.isBepInfinity}
+        contributionMargin={contributionMargin}
+        fixedCostMonthly={fixedCostMonthly}
+      /> */}
 
       {/* CTA Footer */}
       <div className='space-y-3'>
@@ -173,24 +208,11 @@ export function PlanningSummary({ onComplete, onBack }: PlanningSummaryProps) {
           Lanjut ke Dashboard
           <TrendingUp className='ml-2 h-4 w-4' />
         </Button>
-        <div className='flex gap-3'>
-          {onBack && (
-            <Button variant='outline' className='flex-1' onClick={onBack}>
-              ← Kembali
-            </Button>
-          )}
-          <Button
-            variant='ghost'
-            className='flex-1'
-            onClick={() => {
-              document
-                .querySelector('[data-radix-collection-item]')
-                ?.scrollIntoView({ behavior: 'smooth' });
-            }}
-          >
-            Ubah Asumsi & Simulasi
+        {onBack && (
+          <Button variant='outline' className='w-full' onClick={onBack}>
+            ← Kembali
           </Button>
-        </div>
+        )}
       </div>
     </div>
   );

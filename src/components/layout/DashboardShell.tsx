@@ -26,7 +26,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
     setLoading(isLoading);
   }, [data, isLoading, setCurrentBusiness, setLoading]);
   return (
-    <div className='min-h-screen pb-20'>
+    <div className='min-h-screen pb-16'>
       {/* Offline status banner */}
       <OfflineIndicator />
 

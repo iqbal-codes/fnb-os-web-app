@@ -6,6 +6,22 @@
  */
 
 import { Ingredient } from './businessLogic';
+import { EquipmentItem } from '@/components/onboarding/types';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Pricing Modes
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type PricingMode = 'tipis' | 'sehat' | 'premium';
+
+export const PRICING_MODES = {
+  tipis: { gmPercent: 45, label: 'Tipis (45%)' },
+  sehat: { gmPercent: 60, label: 'Sehat (60%)' },
+  premium: { gmPercent: 70, label: 'Premium (70%)' },
+} as const;
+
+export const DEFAULT_PRICING_MODE: PricingMode = 'sehat';
+export const SAFE_TARGET_BUFFER = 1.2; // 20% buffer for Target Aman
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -87,6 +103,125 @@ export const DEFAULT_ASSUMPTIONS: FinancialAssumptions = {
   platformFeePercent: 0,
   wastePercent: 0,
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// New Helper Functions for Summary Calculations
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Calculate monthly CAPEX depreciation from equipment items.
+ * Formula: Σ (equipment_price / (life_span_years × 12))
+ */
+export function calculateCapexDepreciationMonthly(equipmentData: EquipmentItem[]): number {
+  if (!equipmentData || equipmentData.length === 0) return 0;
+
+  return equipmentData.reduce((sum, item) => {
+    if (!item.isSelected) return sum; // Only count selected items
+    const monthlyDepreciation = item.estimated_price / (item.life_span_years * 12);
+    return sum + monthlyDepreciation;
+  }, 0);
+}
+
+/**
+ * Calculate total fixed cost per month (OPEX + CAPEX depreciation)
+ */
+export function calculateFixedCostMonthly(
+  opexMonthly: number,
+  capexDepreciationMonthly: number,
+): number {
+  return opexMonthly + capexDepreciationMonthly;
+}
+
+/**
+ * Calculate operating days per month from openDays array.
+ * Uses formula: round(30 × open_days_per_week / 7)
+ */
+export function calculateOperatingDaysPerMonth(openDaysCount: number): number {
+  if (openDaysCount <= 0 || openDaysCount > 7) return 30; // Default fallback
+  return Math.round((30 * openDaysCount) / 7);
+}
+
+/**
+ * Calculate recommended selling price from COGS using pricing mode (GM target).
+ * Formula: price = cogs / (1 - gm_target)
+ */
+export function calculatePriceFromCOGS(
+  cogs: number,
+  pricingMode: PricingMode = DEFAULT_PRICING_MODE,
+): number {
+  const gmTarget = PRICING_MODES[pricingMode].gmPercent / 100;
+  if (gmTarget >= 1) return cogs; // Edge case protection
+  const rawPrice = cogs / (1 - gmTarget);
+  // Round to nearest 500 for cleaner pricing
+  return Math.round(rawPrice / 500) * 500;
+}
+
+/**
+ * Calculate contribution margin per unit.
+ * CM = price - cogs - channel_variable_per_unit
+ */
+export function calculateContributionMargin(
+  price: number,
+  cogs: number,
+  channelFeePerUnit: number = 0,
+): number {
+  return price - cogs - channelFeePerUnit;
+}
+
+/**
+ * Calculate BEP (Break-Even Point) units per month and per day.
+ * BEP = fixed_monthly / contribution_margin
+ */
+export function calculateBEP(
+  fixedCostMonthly: number,
+  contributionMargin: number,
+  operatingDaysPerMonth: number,
+): { bepUnitsMonth: number; bepUnitsDay: number; isBepInfinity: boolean } {
+  if (contributionMargin <= 0) {
+    return { bepUnitsMonth: Infinity, bepUnitsDay: Infinity, isBepInfinity: true };
+  }
+
+  const bepUnitsMonth = Math.ceil(fixedCostMonthly / contributionMargin);
+  const bepUnitsDay = Math.ceil(bepUnitsMonth / operatingDaysPerMonth);
+
+  return { bepUnitsMonth, bepUnitsDay, isBepInfinity: false };
+}
+
+/**
+ * Calculate Target Aman (Safe Target) = BEP × buffer
+ */
+export function calculateTargetSafe(
+  bepUnitsDay: number,
+  buffer: number = SAFE_TARGET_BUFFER,
+): number {
+  if (!isFinite(bepUnitsDay)) return 0;
+  return Math.ceil(bepUnitsDay * buffer);
+}
+
+/**
+ * Calculate estimated ROI/Payback based on Target Aman.
+ */
+export function calculatePaybackFromTargetSafe(
+  targetSafeDay: number,
+  operatingDaysPerMonth: number,
+  contributionMargin: number,
+  fixedCostMonthly: number,
+  capexTotal: number,
+): { paybackMonths: number; estimatedProfitMonth: number; isPaybackInfinity: boolean } {
+  const unitsMonth = targetSafeDay * operatingDaysPerMonth;
+  const netProfitMonthEst = unitsMonth * contributionMargin - fixedCostMonthly;
+
+  if (netProfitMonthEst <= 0) {
+    return {
+      paybackMonths: Infinity,
+      estimatedProfitMonth: netProfitMonthEst,
+      isPaybackInfinity: true,
+    };
+  }
+
+  const paybackMonths = Math.ceil(capexTotal / netProfitMonthEst);
+  return { paybackMonths, estimatedProfitMonth: netProfitMonthEst, isPaybackInfinity: false };
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Core Calculation Functions
@@ -287,17 +422,26 @@ export function generateEnhancedShoppingPlan(
 
     if (usageCat === buyCat && usageCat !== 'unknown') {
       const catConfig = UNIT_CATEGORIES[usageCat];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const usageBase = totalUsage * (catConfig.conversions as any)[ing.usageUnit];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const packBase = ing.buyingQuantity * (catConfig.conversions as any)[ing.buyingUnit];
+      // Normalize unit keys to match config (case-insensitive lookup)
+      const usageUnitKey = ing.usageUnit.toLowerCase();
+      const buyingUnitKey = ing.buyingUnit.toLowerCase();
 
-      if (packBase > 0) {
-        requiredPacks = Math.ceil(usageBase / packBase);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const usageConversion = (catConfig.conversions as any)[usageUnitKey] || 1;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const buyConversion = (catConfig.conversions as any)[buyingUnitKey] || 1;
+
+      const usageBase = totalUsage * usageConversion;
+      const packBase = ing.buyingQuantity * buyConversion;
+
+      if (packBase > 0 && usageBase > 0) {
+        // Use at least 1 pack if there's any usage
+        requiredPacks = Math.max(1, Math.ceil(usageBase / packBase));
       }
     } else {
-      if (ing.buyingQuantity > 0) {
-        requiredPacks = Math.ceil(totalUsage / ing.buyingQuantity);
+      // Fallback: simple division when units don't match
+      if (ing.buyingQuantity > 0 && totalUsage > 0) {
+        requiredPacks = Math.max(1, Math.ceil(totalUsage / ing.buyingQuantity));
       }
     }
 

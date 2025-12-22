@@ -1,148 +1,185 @@
 'use client';
 
-import { Calendar, Info } from 'lucide-react';
+import { Calendar, Info, Shield, TrendingUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import {
-  FinancialAssumptions,
-  formatCurrency,
-  formatBepDisplay,
-  formatPaybackDisplay,
-} from '@/lib/financialCalculations';
-import { AssumptionEditor } from '../AssumptionEditor';
+import { formatCurrency } from '@/lib/financialCalculations';
 
 interface FinancialAnalysisProps {
-  metrics: {
-    bepCupsPerDay: number;
-    isBepInfinity: boolean;
-    paybackMonths: number;
-    isPaybackInfinity: boolean;
-  };
-  assumptions: FinancialAssumptions;
-  onAssumptionsChange: (assumptions: FinancialAssumptions) => void;
-  sellingPrice: number;
-  cogsPerPortion: number;
+  // BEP
+  bepUnitsPerDay: number;
+  bepUnitsPerMonth: number;
+  isBepInfinity: boolean;
+  // Fixed Costs
+  fixedCostMonthly: number;
   opexMonthly: number;
-  equipmentTotal: number;
+  capexDepreciationMonthly: number;
+  contributionMargin: number;
+  // Target Aman
+  targetSafePerDay: number;
+  // ROI/Payback
+  paybackMonths: number;
+  isPaybackInfinity: boolean;
+  estimatedProfitMonth: number;
+  capexTotal: number;
+  // Data yang digunakan
+  openDaysCount: number;
+  operatingDaysPerMonth: number;
+  pricingModeLabel: string;
+  channelFeePercent: number;
+  wastePercent: number;
 }
 
 export function FinancialAnalysis({
-  metrics,
-  assumptions,
-  onAssumptionsChange,
-  sellingPrice,
-  cogsPerPortion,
+  bepUnitsPerDay,
+  bepUnitsPerMonth,
+  isBepInfinity,
+  fixedCostMonthly,
   opexMonthly,
-  equipmentTotal,
+  capexDepreciationMonthly,
+  contributionMargin,
+  targetSafePerDay,
+  paybackMonths,
+  isPaybackInfinity,
+  estimatedProfitMonth,
+  capexTotal,
+  openDaysCount,
+  operatingDaysPerMonth,
+  pricingModeLabel,
+  channelFeePercent,
+  wastePercent,
 }: FinancialAnalysisProps) {
-  const bepDisplay = formatBepDisplay(metrics.bepCupsPerDay, metrics.isBepInfinity);
-  const roiDisplay = formatPaybackDisplay(metrics.paybackMonths, metrics.isPaybackInfinity);
-
-  // Progress for BEP bar
-  const bepProgress = metrics.isBepInfinity
-    ? 0
-    : Math.min((assumptions.cupsTargetPerDay / metrics.bepCupsPerDay) * 100, 100);
-
   return (
-    <Card className='from-primary/10 to-primary/5 border-primary/20'>
+    <Card className='border-primary/20'>
       <CardHeader className='pb-2'>
         <CardTitle className='text-base'>📊 Analisis Keuangan</CardTitle>
       </CardHeader>
       <CardContent className='space-y-4'>
-        {/* BEP */}
-        <div>
-          <div className='mb-1 flex items-center justify-between'>
-            <span className='flex items-center gap-1 text-sm'>
-              BEP Operasional
-              <button
-                type='button'
-                className='text-muted-foreground hover:text-foreground'
-                title='BEP = OPEX Bulanan ÷ (Harga Jual - COGS - Fee)'
-              >
-                <Info className='h-3.5 w-3.5' />
-              </button>
-            </span>
-            <span className={`font-bold ${bepDisplay.isError ? 'text-red-600' : ''}`}>
-              {bepDisplay.text}
-            </span>
+        {/* Section 1: BEP Operasional */}
+        <div className='space-y-3'>
+          <div className='flex items-center gap-2'>
+            <TrendingUp className='text-primary h-5 w-5' />
+            <span className='font-medium'>BEP Operasional</span>
           </div>
-          <Progress value={bepProgress} className='h-2' />
-          <p className='text-muted-foreground mt-1 text-xs'>
-            Target: {assumptions.cupsTargetPerDay} cups/hari
-            {!metrics.isBepInfinity && bepProgress >= 100 && (
-              <span className='ml-1 text-green-600'>✓ Di atas BEP</span>
-            )}
+
+          <div className='bg-muted/50 space-y-2 rounded-lg p-3'>
+            <div className='flex justify-between text-sm'>
+              <span>BEP/hari</span>
+              <span className={`font-bold ${isBepInfinity ? 'text-red-600' : ''}`}>
+                {isBepInfinity ? 'Tidak tercapai' : `${bepUnitsPerDay} porsi`}
+              </span>
+            </div>
+            <div className='flex justify-between text-sm'>
+              <span>BEP/bulan</span>
+              <span className='font-medium'>
+                {isBepInfinity ? '-' : `${bepUnitsPerMonth} porsi`}
+              </span>
+            </div>
+          </div>
+
+          {/* Fixed Cost Breakdown */}
+          <div className='space-y-2 text-sm'>
+            <p className='text-muted-foreground'>Biaya Tetap Bulanan:</p>
+            <div className='grid grid-cols-2 gap-2'>
+              <div className='bg-background rounded-lg p-2'>
+                <p className='text-muted-foreground text-xs'>OPEX/bulan</p>
+                <p className='font-medium'>{formatCurrency(opexMonthly)}</p>
+              </div>
+              <div className='bg-background rounded-lg p-2'>
+                <p className='text-muted-foreground text-xs'>Depresiasi/bulan</p>
+                <p className='font-medium'>{formatCurrency(capexDepreciationMonthly)}</p>
+              </div>
+            </div>
+            <div className='bg-primary/10 flex justify-between rounded-lg p-2'>
+              <span className='font-medium'>Total Biaya Tetap</span>
+              <span className='font-bold'>{formatCurrency(fixedCostMonthly)}</span>
+            </div>
+          </div>
+
+          {/* Untung Kotor dan Target Aman */}
+          <div className='space-y-2'>
+            <div className='flex justify-between text-sm'>
+              <span className='flex items-center gap-1'>Untung Kotor/Porsi</span>
+              <span className={`font-bold ${contributionMargin <= 0 ? 'text-red-600' : ''}`}>
+                {formatCurrency(contributionMargin)}
+              </span>
+            </div>
+            <div className='flex items-center justify-between rounded-lg bg-green-50 p-2 text-sm dark:bg-green-950/30'>
+              <span className='flex items-center gap-1'>
+                <Shield className='h-4 w-4 text-green-600' />
+                Target Aman
+              </span>
+              <Badge variant='default' className='bg-green-600'>
+                {targetSafePerDay} porsi/hari
+              </Badge>
+            </div>
+          </div>
+        </div>
+
+        {/* Section 2: Balik Modal (ROI/Payback) */}
+        <div className='space-y-3 border-t pt-4'>
+          <div className='flex items-center gap-2'>
+            <Calendar className='text-primary h-5 w-5' />
+            <span className='font-medium'>Balik Modal (ROI)</span>
+          </div>
+
+          <div className='bg-muted/50 space-y-2 rounded-lg p-3'>
+            <div className='flex justify-between text-sm'>
+              <span>Waktu Balik Modal</span>
+              <span
+                className={`text-lg font-bold ${isPaybackInfinity ? 'text-red-600' : 'text-primary'}`}
+              >
+                {isPaybackInfinity ? 'Belum balik modal' : `${paybackMonths} bulan`}
+              </span>
+            </div>
+            <div className='flex justify-between text-sm'>
+              <span>Estimasi Profit/bulan</span>
+              <span
+                className={`font-medium ${estimatedProfitMonth <= 0 ? 'text-red-600' : 'text-green-600'}`}
+              >
+                {formatCurrency(estimatedProfitMonth)}
+              </span>
+            </div>
+            <div className='flex justify-between text-sm'>
+              <span>CAPEX Total</span>
+              <span className='font-medium'>{formatCurrency(capexTotal)}</span>
+            </div>
+          </div>
+
+          <p className='text-muted-foreground text-center text-xs'>
+            Berdasarkan Target Aman (BEP + 20%)
           </p>
         </div>
 
-        {/* ROI */}
-        <div className='flex items-center justify-between border-t py-3'>
-          <div className='flex items-center gap-2'>
-            <Calendar className='text-primary h-5 w-5' />
-            <span className='flex items-center gap-1 font-medium'>
-              Balik Modal (ROI)
-              <button
-                type='button'
-                className='text-muted-foreground hover:text-foreground'
-                title='ROI = Modal Peralatan ÷ (Profit Bersih/Porsi × Penjualan Bulanan)'
-              >
-                <Info className='h-3.5 w-3.5' />
-              </button>
-            </span>
-          </div>
-          <span
-            className={`text-xl font-bold ${roiDisplay.isError ? 'text-red-600' : 'text-primary'}`}
-          >
-            {roiDisplay.text}
-          </span>
-        </div>
-
-        {/* Cost Summary */}
-        <div className='grid grid-cols-2 gap-3 text-sm'>
-          <div className='bg-background rounded-lg p-3'>
-            <p className='text-muted-foreground'>Modal Peralatan</p>
-            <p className='font-bold'>{formatCurrency(equipmentTotal)}</p>
-          </div>
-          <div className='bg-background rounded-lg p-3'>
-            <p className='text-muted-foreground'>OPEX Bulanan</p>
-            <p className='font-bold'>{formatCurrency(opexMonthly)}</p>
-          </div>
-        </div>
-
-        {/* Assumption Editor */}
-        <div className='flex justify-center'>
-          <AssumptionEditor
-            assumptions={assumptions}
-            onAssumptionsChange={onAssumptionsChange}
-            priceSell={sellingPrice}
-            cogsPerPortion={cogsPerPortion}
-            opexMonthly={opexMonthly}
-            equipmentCost={equipmentTotal}
-          />
-        </div>
-
-        {/* Assumptions Collapsible */}
+        {/* Data yang digunakan (Collapsible) */}
         <Accordion type='single' collapsible className='bg-background rounded-lg'>
-          <AccordionItem value='assumptions' className='border-0'>
+          <AccordionItem value='data-used' className='border-0'>
             <AccordionTrigger className='px-3 py-2 text-sm hover:no-underline'>
               <span className='flex items-center gap-2'>
                 <Info className='h-4 w-4' />
-                Asumsi yang dipakai
+                Data yang digunakan
               </span>
             </AccordionTrigger>
             <AccordionContent className='px-3 pb-3'>
               <ul className='text-muted-foreground space-y-1 text-xs'>
-                <li>• Target penjualan: {assumptions.cupsTargetPerDay} porsi/hari</li>
-                <li>• Hari operasi: {assumptions.daysSellPerMonth} hari/bulan</li>
-                <li>• Platform fee: {assumptions.platformFeePercent}%</li>
-                <li>• Waste/spoilage: {assumptions.wastePercent}%</li>
+                <li>
+                  • Hari buka: {openDaysCount} hari/minggu → {operatingDaysPerMonth} hari/bulan
+                </li>
+                <li>• Biaya operasional/bulan: {formatCurrency(opexMonthly)}</li>
+                <li>• Depresiasi alat/bulan: {formatCurrency(capexDepreciationMonthly)}</li>
+                <li>• Mode harga: {pricingModeLabel}</li>
+                <li>• Biaya platform: {channelFeePercent}% (belum diatur)</li>
+                <li>• Bahan terbuang: {wastePercent}% (belum diatur)</li>
               </ul>
+              <p className='text-muted-foreground mt-2 text-xs italic'>
+                Anda bisa melengkapi pengaturan ini nanti di dashboard.
+              </p>
             </AccordionContent>
           </AccordionItem>
         </Accordion>

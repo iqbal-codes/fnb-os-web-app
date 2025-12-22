@@ -185,19 +185,27 @@ export const generateShoppingPlan = (
 
     if (usageCat === buyCat && usageCat !== 'unknown') {
       const catConfig = UNIT_CATEGORIES[usageCat];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const usageBase = totalUsage * (catConfig.conversions as any)[ing.usageUnit];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const packBase = ing.buyingQuantity * (catConfig.conversions as any)[ing.buyingUnit];
+      // Normalize unit keys for case-insensitive lookup
+      const usageUnitKey = ing.usageUnit.toLowerCase();
+      const buyingUnitKey = ing.buyingUnit.toLowerCase();
 
-      if (packBase > 0) {
-        requiredPacks = Math.ceil(usageBase / packBase);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const usageConversion = (catConfig.conversions as any)[usageUnitKey] || 1;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const buyConversion = (catConfig.conversions as any)[buyingUnitKey] || 1;
+
+      const usageBase = totalUsage * usageConversion;
+      const packBase = ing.buyingQuantity * buyConversion;
+
+      if (packBase > 0 && usageBase > 0) {
+        // Ensure minimum 1 pack when there's any usage
+        requiredPacks = Math.max(1, Math.ceil(usageBase / packBase));
       }
     } else {
-      // Simple fallback
+      // Simple fallback when units don't match
       const totalUsageSimple = ing.usageQuantity * dailySalesTarget * daysToStock;
-      if (ing.buyingQuantity > 0) {
-        requiredPacks = Math.ceil(totalUsageSimple / ing.buyingQuantity);
+      if (ing.buyingQuantity > 0 && totalUsageSimple > 0) {
+        requiredPacks = Math.max(1, Math.ceil(totalUsageSimple / ing.buyingQuantity));
       }
     }
 

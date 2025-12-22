@@ -5,20 +5,20 @@ import { formatCurrency } from '@/lib/financialCalculations';
 
 interface MenuPreviewProps {
   menuName?: string;
+  recommendedPrice: number;
   cogsPerPortion: number;
-  netProfitPerPortion: number;
-  sellingPrice: number;
+  grossProfitPerPortion: number;
 }
 
 export function MenuPreview({
   menuName,
+  recommendedPrice,
   cogsPerPortion,
-  netProfitPerPortion,
-  sellingPrice,
+  grossProfitPerPortion,
 }: MenuPreviewProps) {
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className='pb-2'>
         <CardTitle className='text-base'>🍽️ Menu Anda</CardTitle>
       </CardHeader>
       <CardContent>
@@ -26,13 +26,14 @@ export function MenuPreview({
           <div>
             <p className='font-medium'>{menuName || 'Menu Belum Dinamai'}</p>
             <p className='text-muted-foreground text-xs'>
-              COGS: {formatCurrency(cogsPerPortion)} | Profit: {formatCurrency(netProfitPerPortion)}
+              Modal: {formatCurrency(cogsPerPortion)} | Untung Kotor:{' '}
+              {formatCurrency(grossProfitPerPortion)}
             </p>
           </div>
-          <span className='text-lg font-bold'>{formatCurrency(sellingPrice)}</span>
+          <span className='text-lg font-bold'>{formatCurrency(recommendedPrice)}</span>
         </div>
         <p className='text-muted-foreground mt-2 text-center text-xs'>
-          💡 Tip: Tambah 2-3 menu lagi untuk variasi. Anda bisa melakukannya di dashboard.
+          💡 Tip: Tambah 2-3 menu lagi untuk variasi & strategi profit.
         </p>
       </CardContent>
     </Card>

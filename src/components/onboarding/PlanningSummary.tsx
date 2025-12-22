@@ -477,7 +477,7 @@ export function PlanningSummary({ onComplete, onBack }: PlanningSummaryProps) {
               <TableHeader>
                 <TableRow>
                   <TableHead>Bahan</TableHead>
-                  <TableHead className='text-right'>Jml Beli</TableHead>
+                  <TableHead className='text-right'>Jml. Beli</TableHead>
                   <TableHead className='text-right'>Est. Biaya</TableHead>
                 </TableRow>
               </TableHeader>
@@ -511,12 +511,12 @@ export function PlanningSummary({ onComplete, onBack }: PlanningSummaryProps) {
       </Dialog>
 
       {/* AI Suggestions */}
-      <AISuggestionCards
+      {/* <AISuggestionCards
         currentPrice={sellingPrice}
         topCostDriver={shoppingPlan.topCostDrivers[0] || null}
         simulatePrice={handleSimulatePrice}
         onApplyPrice={handleApplyPrice}
-      />
+      /> */}
 
       {/* CTA Footer */}
       <div className='space-y-3'>

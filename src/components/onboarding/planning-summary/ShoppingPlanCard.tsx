@@ -1,52 +1,46 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, ScrollText } from 'lucide-react';
+import { ScrollText, ChevronDown, ShoppingCart } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { formatCurrency, type ShoppingPlanSummary } from '@/lib/financialCalculations';
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer';
+import { formatCurrency, ShoppingPlanSummary } from '@/lib/financialCalculations';
 
 interface ShoppingPlanCardProps {
   shoppingPlan: ShoppingPlanSummary;
-  cupsTargetPerDay: number;
+  targetSafePerDay: number;
 }
 
-export function ShoppingPlanCard({ shoppingPlan, cupsTargetPerDay }: ShoppingPlanCardProps) {
-  const [dialogOpen, setDialogOpen] = useState(false);
+export function ShoppingPlanCard({ shoppingPlan, targetSafePerDay }: ShoppingPlanCardProps) {
+  const [shoppingPlanOpen, setShoppingPlanOpen] = useState(false);
+
+  const totalUnits = targetSafePerDay * 7;
 
   return (
     <>
       <Card
         className='hover:border-primary/50 cursor-pointer transition-all'
-        onClick={() => setDialogOpen(true)}
+        onClick={() => setShoppingPlanOpen(true)}
       >
         <CardContent className='p-4'>
           <div className='mb-3 flex items-center justify-between'>
             <div className='flex items-center gap-3'>
-              <div className='rounded-full bg-blue-100 p-2 text-blue-600'>
+              <div className='rounded-full bg-blue-100 p-2 text-blue-600 dark:bg-blue-950'>
                 <ScrollText className='h-5 w-5' />
               </div>
               <div>
-                <p className='font-medium'>🛒 Shopping Plan 7 Hari</p>
+                <p className='font-medium'>🛒 Rencana Belanja 7 Hari</p>
                 <p className='text-muted-foreground text-xs'>
-                  {cupsTargetPerDay} porsi/hari × 7 hari = {shoppingPlan.productionBasis.totalCups}{' '}
-                  porsi
+                  {targetSafePerDay} porsi/hari × 7 hari = {totalUnits} porsi
                 </p>
               </div>
             </div>
@@ -74,55 +68,71 @@ export function ShoppingPlanCard({ shoppingPlan, cupsTargetPerDay }: ShoppingPla
               </div>
             )}
           </div>
+
+          <p className='text-muted-foreground mt-2 text-center text-xs'>Berdasarkan Target Aman</p>
         </CardContent>
       </Card>
 
-      {/* Shopping Plan Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className='max-w-md md:max-w-lg'>
-          <DialogHeader>
-            <DialogTitle>Shopping Plan (7 Hari)</DialogTitle>
-            <DialogDescription>
-              Daftar belanja untuk target {cupsTargetPerDay} porsi/hari selama seminggu.
-            </DialogDescription>
-          </DialogHeader>
-          <div className='max-h-[60vh] overflow-y-auto'>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Bahan</TableHead>
-                  <TableHead className='text-right'>Jml Beli</TableHead>
-                  <TableHead className='text-right'>Est. Biaya</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {shoppingPlan.items.map((item, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell className='font-medium'>{item.ingredientName}</TableCell>
-                    <TableCell className='text-right'>
-                      {item.packsToBuy} {item.packUnit}
-                    </TableCell>
-                    <TableCell className='text-right'>
-                      {formatCurrency(item.estimatedCost)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-                <TableRow>
-                  <TableCell colSpan={2} className='text-right font-bold'>
-                    Total
-                  </TableCell>
-                  <TableCell className='text-right font-bold'>
-                    {formatCurrency(shoppingPlan.totalCost)}
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
+      {/* Shopping Plan Drawer - Mobile Friendly */}
+      <Drawer open={shoppingPlanOpen} onOpenChange={setShoppingPlanOpen}>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle className='flex items-center justify-center gap-2'>
+              <ShoppingCart className='h-5 w-5' />
+              Rencana Belanja 7 Hari
+            </DrawerTitle>
+            <DrawerDescription>
+              Target {targetSafePerDay} porsi/hari × 7 hari = {totalUnits} porsi
+            </DrawerDescription>
+          </DrawerHeader>
+
+          {/* Card List - Mobile Friendly */}
+          <div className='max-h-[40vh] space-y-2 overflow-y-auto px-4'>
+            {shoppingPlan.items.map((item, idx) => (
+              <div
+                key={idx}
+                className='bg-muted/50 flex items-center justify-between rounded-lg p-3'
+              >
+                <div className='min-w-0 flex-1'>
+                  <p className='truncate text-sm font-medium'>{item.ingredientName}</p>
+                  <p className='text-muted-foreground text-xs'>
+                    {item.packsToBuy} × {item.packSize} {item.packUnit}
+                  </p>
+                </div>
+                <div className='ml-3 shrink-0 text-right'>
+                  <p className='text-primary text-sm font-bold'>
+                    {formatCurrency(item.estimatedCost)}
+                  </p>
+                  {item.percentOfTotal > 10 && (
+                    <Badge variant='secondary' className='text-xs'>
+                      {item.percentOfTotal.toFixed(0)}%
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
-          <div className='mt-4 flex justify-end'>
-            <Button onClick={() => setDialogOpen(false)}>Tutup</Button>
+
+          {/* Total Section */}
+          <div className='mx-4 mt-4 border-t pt-3'>
+            <div className='flex items-center justify-between'>
+              <span className='font-medium'>Total Belanja</span>
+              <span className='text-primary text-xl font-bold'>
+                {formatCurrency(shoppingPlan.totalCost)}
+              </span>
+            </div>
+            <p className='text-muted-foreground mt-1 text-center text-xs'>
+              Berdasarkan Target Aman (BEP + 20%)
+            </p>
           </div>
-        </DialogContent>
-      </Dialog>
+
+          <DrawerFooter>
+            <Button className='w-full' onClick={() => setShoppingPlanOpen(false)}>
+              Tutup
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </>
   );
 }

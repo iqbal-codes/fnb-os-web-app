@@ -8,7 +8,6 @@ import { toast } from 'sonner';
 
 import { useAuthStore } from '@/stores/authStore';
 import { useOnboardingState } from '@/hooks/useOnboarding';
-import { useCreateBusiness } from '@/hooks/useBusiness';
 import { Progress } from '@/components/ui/progress';
 
 // Onboarding step components
@@ -52,7 +51,6 @@ export default function OnboardingPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const createBusiness = useCreateBusiness();
 
   // Get state from URL (Source of Truth)
   const stepParam = searchParams.get('step');
@@ -228,22 +226,42 @@ export default function OnboardingPage() {
   const handleComplete = useCallback(async () => {
     const values = getValues();
     try {
-      await createBusiness.mutateAsync({
-        name: values.businessName || 'My F&B Business',
-        type: values.businessType!,
-        location: values.city,
-        isPlanningMode: true,
+      // Use new endpoint that syncs all data
+      const response = await fetch('/api/onboarding/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          businessName: values.businessName || 'My F&B Business',
+          businessType: values.businessType,
+          city: values.city,
+          operatingModel: values.operatingModel,
+          openDays: values.openDays,
+          menuData: values.menuData,
+          opexData: values.opexData,
+          equipmentData: values.equipmentData,
+        }),
       });
 
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to complete onboarding');
+      }
+
+      // Clear local storage
+      if (userId) {
+        localStorage.removeItem(`EFENBI_ONBOARDING_STATE_${userId}`);
+      }
       localStorage.removeItem('EFENBI_ONBOARDING_STATE');
-      toast.success('Business created successfully!');
-      router.push('/planning');
+
+      toast.success(`Bisnis "${data.business.name}" berhasil dibuat! 🎉`);
+      router.push('/dashboard');
       router.refresh();
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to create business';
+      const message = error instanceof Error ? error.message : 'Failed to complete onboarding';
       toast.error(message);
     }
-  }, [getValues, createBusiness, router]);
+  }, [getValues, router, userId]);
 
   // --- Renderers ---
 

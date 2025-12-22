@@ -70,6 +70,10 @@ export const api = {
     getState: () => apiClient.get<{ data: any }>('/api/onboarding/state').then((r) => r.data),
     saveState: (state: any) =>
       apiClient.post<{ success: boolean }>('/api/onboarding/state', { state }).then((r) => r.data),
+    complete: (data: CompleteOnboardingRequest) =>
+      apiClient
+        .post<CompleteOnboardingResponse>('/api/onboarding/complete', data)
+        .then((r) => r.data),
   },
 };
 
@@ -142,6 +146,50 @@ export interface UpdateBusinessRequest {
   description?: string;
   location?: string;
   target_margin?: number;
+}
+
+// Onboarding types
+export interface CompleteOnboardingRequest {
+  businessName: string;
+  businessType: string;
+  city?: string;
+  operatingModel?: string;
+  openDays?: number[];
+  menuData: {
+    name: string;
+    category?: string;
+    description?: string;
+    estimatedCogs: number;
+    suggestedPrice: number;
+    ingredients: Array<{
+      name: string;
+      usageQuantity: number;
+      usageUnit: string;
+      buyingQuantity?: number;
+      buyingUnit?: string;
+      buyingPrice?: number;
+    }>;
+  };
+  opexData?: Array<{
+    id: string;
+    name: string;
+    amount: number;
+    frequency: string;
+  }>;
+  equipmentData?: Array<{
+    id: string;
+    name: string;
+    price: number;
+    lifeYears?: number;
+    priority?: string;
+  }>;
+}
+
+export interface CompleteOnboardingResponse {
+  success: boolean;
+  business: BusinessResponse;
+  menu: { id: string; name: string };
+  ingredientsCreated: number;
 }
 
 export { ApiError, apiClient };
