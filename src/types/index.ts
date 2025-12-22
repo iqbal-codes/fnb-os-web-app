@@ -1,4 +1,4 @@
-// Core TypeScript types for SajiPlan F&B Business OS
+// Core TypeScript types for eFeNBi F&B Business OS
 
 // ============ Business & User Types ============
 export interface Business {

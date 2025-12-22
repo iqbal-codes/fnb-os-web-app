@@ -105,9 +105,11 @@ export function BusinessIdeaSetup({ onNext }: BusinessIdeaSetupProps) {
                     aria-expanded={openType}
                     className='w-full justify-between'
                   >
-                    {field.value
-                      ? businessTypes.find((type) => type.value === field.value)?.label
-                      : 'Pilih tipe bisnis...'}
+                    {field.value ? (
+                      businessTypes.find((type) => type.value === field.value)?.label
+                    ) : (
+                      <div className='text-muted-foreground'>Pilih tipe bisnis...</div>
+                    )}
                     <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
                   </Button>
                 </PopoverTrigger>
@@ -163,9 +165,11 @@ export function BusinessIdeaSetup({ onNext }: BusinessIdeaSetupProps) {
                     aria-expanded={openCity}
                     className='w-full justify-between font-normal'
                   >
-                    {field.value
-                      ? cities.find((c) => c.value === field.value)?.label
-                      : 'Cari kota/kabupaten...'}
+                    {field.value ? (
+                      cities.find((c) => c.value === field.value)?.label
+                    ) : (
+                      <div className='text-muted-foreground'>Cari kota/kabupaten...</div>
+                    )}
                     <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
                   </Button>
                 </PopoverTrigger>
@@ -228,7 +232,7 @@ export function BusinessIdeaSetup({ onNext }: BusinessIdeaSetupProps) {
           </div>
 
           {/* Secondary Model (Collapsible concept or just visible optional) */}
-          <div className='space-y-2'>
+          {/* <div className='space-y-2'>
             <Label className='text-muted-foreground text-sm font-normal'>
               Model Tambahan (Opsional)
             </Label>
@@ -257,7 +261,7 @@ export function BusinessIdeaSetup({ onNext }: BusinessIdeaSetupProps) {
                 </Select>
               )}
             />
-          </div>
+          </div> */}
         </div>
 
         {/* 5. Hari Buka (Days Selector) */}

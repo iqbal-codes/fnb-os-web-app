@@ -8,9 +8,16 @@ interface FormPersistenceProps {
   step: number;
   maxReachedStep: number;
   userId: string;
+  enabled?: boolean;
 }
 
-export function FormPersistence({ mode, step, maxReachedStep, userId }: FormPersistenceProps) {
+export function FormPersistence({
+  mode,
+  step,
+  maxReachedStep,
+  userId,
+  enabled = true,
+}: FormPersistenceProps) {
   const { control } = useFormContext<OnboardingFormValues>();
   const formValues = useWatch({ control });
   const lastSavedRef = useRef<string>('');
@@ -19,12 +26,13 @@ export function FormPersistence({ mode, step, maxReachedStep, userId }: FormPers
 
   useEffect(() => {
     // 1. Cleanup old generic key if it exists
-    if (localStorage.getItem('SAJIPLAN_ONBOARDING_STATE')) {
-      localStorage.removeItem('SAJIPLAN_ONBOARDING_STATE');
+    if (localStorage.getItem('EFENBI_ONBOARDING_STATE')) {
+      localStorage.removeItem('EFENBI_ONBOARDING_STATE');
     }
   }, []);
 
   useEffect(() => {
+    if (!enabled) return;
     if (mode === 'selection' && step === 1) return;
     if (!userId) return;
 
@@ -43,7 +51,7 @@ export function FormPersistence({ mode, step, maxReachedStep, userId }: FormPers
     lastSavedRef.current = stateString;
 
     // 2. Save to LocalStorage (Immediate & Sync)
-    const key = `SAJIPLAN_ONBOARDING_STATE_${userId}`;
+    const key = `EFENBI_ONBOARDING_STATE_${userId}`;
     localStorage.setItem(key, stateString);
 
     // 3. Save to Supabase via API (Debounced)
@@ -52,7 +60,7 @@ export function FormPersistence({ mode, step, maxReachedStep, userId }: FormPers
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [mode, step, formValues, maxReachedStep, userId, saveState]);
+  }, [mode, step, formValues, maxReachedStep, userId, saveState, enabled]);
 
   return null;
 }

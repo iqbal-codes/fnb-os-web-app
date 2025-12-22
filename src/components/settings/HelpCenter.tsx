@@ -47,7 +47,7 @@ export function HelpCenter() {
           <HelpCircle className='h-5 w-5' />
           Bantuan
         </h1>
-        <p className='text-muted-foreground text-sm'>Panduan penggunaan SajiPlan</p>
+        <p className='text-muted-foreground text-sm'>Panduan penggunaan eFeNBi</p>
       </div>
 
       {/* Quick Actions */}
@@ -93,7 +93,7 @@ export function HelpCenter() {
           <div className='flex items-center gap-3'>
             <Star className='text-primary h-8 w-8' />
             <div className='flex-1'>
-              <p className='text-sm font-medium'>Suka SajiPlan?</p>
+              <p className='text-sm font-medium'>Suka eFeNBi?</p>
               <p className='text-muted-foreground text-xs'>
                 Berikan rating untuk membantu kami berkembang
               </p>
@@ -108,7 +108,7 @@ export function HelpCenter() {
 
       {/* Version */}
       <p className='text-muted-foreground text-center text-xs'>
-        SajiPlan v1.0.0 • Made with ❤️ for F&B entrepreneurs
+        eFeNBi v1.0.0 • Made with ❤️ for F&B entrepreneurs
       </p>
     </div>
   );

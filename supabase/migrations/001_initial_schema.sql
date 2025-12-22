@@ -1,4 +1,4 @@
--- SajiPlan Initial Database Schema
+-- eFeNBi Initial Database Schema
 -- Phase 3: Core Tables with RLS
 
 -- Enable necessary extensions

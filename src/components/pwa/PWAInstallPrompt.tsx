@@ -85,7 +85,7 @@ export function PWAInstallPrompt() {
               <Smartphone className='text-primary h-6 w-6' />
             </div>
             <div className='min-w-0 flex-1'>
-              <h3 className='text-sm font-semibold'>Install SajiPlan</h3>
+              <h3 className='text-sm font-semibold'>Install eFeNBi</h3>
               <p className='text-muted-foreground mt-0.5 text-xs'>
                 Akses cepat dari home screen, bekerja offline
               </p>
@@ -135,7 +135,7 @@ export function IOSInstallBanner() {
           <div className='flex items-start gap-3'>
             <div className='text-2xl'>📲</div>
             <div className='flex-1'>
-              <p className='text-sm font-medium'>Install SajiPlan</p>
+              <p className='text-sm font-medium'>Install eFeNBi</p>
               <p className='text-muted-foreground mt-1 text-xs'>
                 Tap{' '}
                 <span className='inline-flex items-center'>

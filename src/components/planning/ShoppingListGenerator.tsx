@@ -89,7 +89,7 @@ export function ShoppingListGenerator() {
 
     if (navigator.share) {
       navigator.share({
-        title: 'Daftar Belanja SajiPlan',
+        title: 'Daftar Belanja eFeNBi',
         text: `Daftar Belanja:\n${text}\n\nEstimasi Total: ${formatRupiah(totalEstimate)}`,
       });
     } else {

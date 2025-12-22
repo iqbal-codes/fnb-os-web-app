@@ -5,7 +5,7 @@ import { DashboardShell } from '@/components/layout/DashboardShell';
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | SajiPlan',
+    template: '%s | eFeNBi',
     default: 'Dashboard',
   },
 };

@@ -48,7 +48,7 @@ export const opexItemSchema = z.object({
 export const equipmentItemSchema = z.object({
   id: z.string(),
   name: z.string().min(1, 'Nama peralatan wajib diisi'),
-  quantity: z.number().min(1, 'Minimal 1'),
+  life_span_years: z.number().min(1, 'Minimal 1 tahun'),
   estimated_price: z.number().min(0),
   priority: z.enum(['essential', 'recommended', 'optional']),
   isAiSuggested: z.boolean(),

@@ -52,10 +52,7 @@ export function PlanningSummary({ onComplete, onBack }: PlanningSummaryProps) {
   const opexMonthly = calculateMonthlyOpex(opexData || []);
 
   // Equipment total
-  const equipmentTotal = (equipmentData || []).reduce(
-    (sum, eq) => sum + eq.quantity * eq.estimated_price,
-    0,
-  );
+  const equipmentTotal = (equipmentData || []).reduce((sum, eq) => sum + eq.estimated_price, 0);
 
   // COGS
   const cogsPerPortion = menuData?.estimatedCogs || calculateMenuCOGS(menuData?.ingredients || []);

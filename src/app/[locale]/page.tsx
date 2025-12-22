@@ -130,8 +130,8 @@ export default async function HomePage({ params }: Props) {
           </h2>
           <p className='text-muted-foreground mx-auto max-w-2xl'>
             {locale === 'id'
-              ? 'Dari perencanaan bisnis hingga operasional harian, SajiPlan membantu Anda mengelola semua aspek bisnis F&B.'
-              : 'From business planning to daily operations, SajiPlan helps you manage every aspect of your F&B business.'}
+              ? 'Dari perencanaan bisnis hingga operasional harian, eFeNBi membantu Anda mengelola semua aspek bisnis F&B.'
+              : 'From business planning to daily operations, eFeNBi helps you manage every aspect of your F&B business.'}
           </p>
         </div>
 
@@ -165,8 +165,8 @@ export default async function HomePage({ params }: Props) {
             </h2>
             <p className='text-muted-foreground mx-auto mb-6 max-w-xl'>
               {locale === 'id'
-                ? 'Bergabung dengan ribuan pebisnis F&B yang sudah menggunakan SajiPlan untuk mengelola bisnis mereka.'
-                : 'Join thousands of F&B entrepreneurs who are already using SajiPlan to manage their businesses.'}
+                ? 'Bergabung dengan ribuan pebisnis F&B yang sudah menggunakan eFeNBi untuk mengelola bisnis mereka.'
+                : 'Join thousands of F&B entrepreneurs who are already using eFeNBi to manage their businesses.'}
             </p>
             <Button asChild size='lg'>
               <Link href='/register'>
@@ -181,7 +181,7 @@ export default async function HomePage({ params }: Props) {
       {/* Footer */}
       <footer className='text-muted-foreground container mx-auto border-t px-4 py-8 text-center text-sm'>
         <p>
-          © 2025 SajiPlan.{' '}
+          © 2025 eFeNBi.{' '}
           {locale === 'id' ? 'Dibuat untuk entrepreneur F&B.' : 'Built for F&B entrepreneurs.'}
         </p>
       </footer>

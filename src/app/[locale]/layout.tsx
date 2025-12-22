@@ -15,15 +15,15 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | SajiPlan',
-    default: 'SajiPlan - F&B Business OS',
+    template: '%s | eFeNBi',
+    default: 'eFeNBi - F&B Business OS',
   },
   description: 'Plan, run, and optimize your F&B business with AI-powered insights',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'SajiPlan',
+    title: 'eFeNBi',
   },
 };
 

@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "SajiPlan",
+    "appName": "eFeNBi",
     "loading": "Loading...",
     "save": "Save",
     "cancel": "Cancel",
@@ -47,7 +47,7 @@
     "logout": "Log out"
   },
   "onboarding": {
-    "welcome": "Welcome to SajiPlan!",
+    "welcome": "Welcome to eFeNBi!",
     "subtitle": "Let's set up your F&B business",
     "newBusiness": {
       "title": "I'm starting a new business",

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useFieldArray, Controller, useFormContext, useWatch } from 'react-hook-form';
-import { UtensilsCrossed, Plus, Calculator } from 'lucide-react';
+import { UtensilsCrossed, Plus, Calculator, Pencil, Trash2, Package, ChefHat } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,12 +14,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Drawer, DrawerContent } from '@/components/ui/drawer';
 import { toast } from 'sonner';
 import { calculateMenuCOGS, calculateIngredientCost } from '@/lib/businessLogic';
-import type { OnboardingFormValues } from '@/components/onboarding/types';
+import type { OnboardingFormValues, Ingredient } from '@/components/onboarding/types';
 
-import { IngredientRow } from './IngredientRow';
 import { CogsResult } from './CogsResult';
+import { IngredientDrawerForm } from './IngredientDrawerForm';
 
 const CATEGORY_OPTIONS = ['minuman', 'makanan', 'snack', 'dessert'];
 const MARGIN_OPTIONS = [30, 35, 40, 45, 50, 55, 60, 65];
@@ -47,7 +48,7 @@ const FirstMenuHeader = () => (
       <UtensilsCrossed className='text-primary h-5 w-5' />
       Buat Menu Pertama
     </h3>
-    <p className='text-muted-foreground text-sm'>Buat satu menu contoh dengan resepnya</p>
+    <p className='text-muted-foreground text-sm'>Buat satu menu dengan resepnya</p>
   </div>
 );
 FirstMenuHeader.displayName = 'FirstMenuHeader';
@@ -57,34 +58,23 @@ export function FirstMenuSetup({ onNext, onBack }: FirstMenuSetupProps) {
   const [selectedMargin, setSelectedMargin] = useState(50);
   const [ingredientBreakdown, setIngredientBreakdown] = useState<IngredientCostBreakdown[]>([]);
 
+  // Drawer State
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+
   const { control, setValue, getValues } = useFormContext<OnboardingFormValues>();
 
   const estimatedCogs = useWatch({ control, name: 'menuData.estimatedCogs' });
   const suggestedPrice = useWatch({ control, name: 'menuData.suggestedPrice' });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, update } = useFieldArray({
     control,
     name: 'menuData.ingredients',
   });
 
-  const addIngredient = () => {
-    append({
-      id: `custom-${Date.now()}`,
-      name: '',
-      usageQuantity: 0,
-      usageUnit: 'gram',
-      isDifferentUnit: false,
-      isAiSuggested: false,
-      buyingQuantity: 0,
-      buyingUnit: 'gram',
-      buyingPrice: 0,
-    });
-  };
-
   // Calculate suggested price based on COGS and margin
   const calculateSuggestedPrice = (cogs: number, margin: number): number => {
     // Price = COGS / (1 - margin%)
-    // e.g., COGS=5000, margin=50% => Price = 5000 / 0.5 = 10000
     const price = cogs / (1 - margin / 100);
     return roundToNearest1000(price);
   };
@@ -132,8 +122,39 @@ export function FirstMenuSetup({ onNext, onBack }: FirstMenuSetupProps) {
     onNext();
   };
 
+  const handleSaveIngredient = (
+    data: Omit<Ingredient, 'id' | 'isDifferentUnit' | 'isAiSuggested'>,
+  ) => {
+    const newIngredient: Ingredient = {
+      id: editingIndex !== null ? fields[editingIndex].id : `custom-${Date.now()}`,
+      isAiSuggested: false,
+      // Calculate isDifferentUnit strictly primarily for data compatibility
+      isDifferentUnit: true, // Always true in this new simplified flow as we capture both explicitly
+      ...data,
+    };
+
+    if (editingIndex !== null) {
+      update(editingIndex, newIngredient);
+    } else {
+      append(newIngredient);
+    }
+    setIsDrawerOpen(false);
+    setEditingIndex(null);
+    setIsCalculated(false); // Reset calculation on change
+  };
+
+  const openAddDrawer = () => {
+    setEditingIndex(null);
+    setIsDrawerOpen(true);
+  };
+
+  const openEditDrawer = (index: number) => {
+    setEditingIndex(index);
+    setIsDrawerOpen(true);
+  };
+
   return (
-    <div className='space-y-4'>
+    <div className='space-y-4 overflow-y-auto'>
       <FirstMenuHeader />
 
       <div className='space-y-4'>
@@ -172,35 +193,70 @@ export function FirstMenuSetup({ onNext, onBack }: FirstMenuSetupProps) {
           />
         </div>
 
-        {/* Description (Optional) */}
+        {/* Ingredients List */}
         <div className='space-y-2'>
-          <Label>Deskripsi (Opsional)</Label>
-          <Controller
-            name='menuData.description'
-            control={control}
-            render={({ field }) => (
-              <Input {...field} placeholder='Deskripsi singkat menu...' value={field.value || ''} />
-            )}
-          />
-        </div>
-
-        {/* Ingredients */}
-        <div className='space-y-2'>
-          <Label>Bahan-bahan</Label>
+          <Label>Bahan-bahan & Kemasan</Label>
           {fields.length === 0 ? (
-            <div className='text-muted-foreground bg-muted/20 rounded-lg border border-dashed py-6 text-center text-sm'>
-              Belum ada bahan. Tambahkan bahan utama untuk mendapatkan estimasi COGS & Harga.
+            <div className='text-muted-foreground bg-muted/20 flex flex-col items-center gap-2 rounded-lg border border-dashed py-8 text-center text-sm'>
+              <UtensilsCrossed className='h-8 w-8 opacity-20' />
+              <p>Belum ada bahan. Tambahkan bahan baku & kemasan.</p>
             </div>
           ) : (
-            <div className='space-y-3'>
-              {fields.map((field, index) => (
-                <IngredientRow key={field.id} index={index} remove={remove} />
-              ))}
+            <div className='space-y-2'>
+              {fields.map((field, index) => {
+                // Calculate estimated cost for display
+                const cost = calculateIngredientCost(field as Ingredient); // cast safe here
+                return (
+                  <div
+                    key={field.id}
+                    className='hover:bg-muted/50 flex items-center justify-between rounded-lg border p-3 transition-colors'
+                  >
+                    <div className='flex items-center gap-3 overflow-hidden'>
+                      <div className='bg-primary/10 text-primary rounded-full p-2'>
+                        {field.category === 'packaging' ? (
+                          <Package className='h-4 w-4' />
+                        ) : (
+                          <ChefHat className='h-4 w-4' />
+                        )}
+                      </div>
+                      <div className='overflow-hidden'>
+                        <p className='truncate font-medium'>{field.name}</p>
+                        <p className='text-muted-foreground text-xs'>
+                          {field.usageQuantity} {field.usageUnit} • Harga: {field.buyingQuantity}{' '}
+                          {field.buyingUnit} @ {field.buyingPrice?.toLocaleString('id-ID')}
+                        </p>
+                      </div>
+                    </div>
+                    <div className='flex items-center gap-1'>
+                      <div className='mr-2 text-xs font-semibold'>
+                        ~Rp {Math.ceil(cost).toLocaleString('id-ID')}
+                      </div>
+                      <Button
+                        size='icon'
+                        variant='ghost'
+                        className='h-8 w-8'
+                        onClick={() => openEditDrawer(index)}
+                      >
+                        <Pencil className='h-4 w-4' />
+                      </Button>
+                      <Button
+                        size='icon'
+                        variant='ghost'
+                        className='text-destructive hover:text-destructive h-8 w-8'
+                        onClick={() => remove(index)}
+                      >
+                        <Trash2 className='h-4 w-4' />
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
-          <Button variant='outline' className='w-full' onClick={addIngredient}>
+
+          <Button variant='outline' className='mt-2 w-full' onClick={openAddDrawer}>
             <Plus className='mr-2 h-4 w-4' />
-            Tambah Bahan
+            Tambah Bahan / Kemasan
           </Button>
         </div>
       </div>
@@ -240,6 +296,19 @@ export function FirstMenuSetup({ onNext, onBack }: FirstMenuSetupProps) {
           Simpan Menu & Lanjut
         </Button>
       </div>
+
+      {/* INGREDIENT DRAWER */}
+      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+        <DrawerContent className='mt-4'>
+          {isDrawerOpen && (
+            <IngredientDrawerForm
+              defaultValues={editingIndex !== null ? fields[editingIndex] : undefined}
+              onSave={handleSaveIngredient}
+              onCancel={() => setIsDrawerOpen(false)}
+            />
+          )}
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }

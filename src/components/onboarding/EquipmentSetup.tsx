@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { NumberInput } from '@/components/ui/number-input';
 import { Label } from '@/components/ui/label';
 import type { OnboardingFormValues } from '@/components/onboarding/types';
+import { useCallback, useEffect } from 'react';
 
 interface EquipmentSetupProps {
   onBack?: () => void;
@@ -42,17 +43,17 @@ const EquipmentRow = ({ index, remove, canDelete = true }: EquipmentRowProps) =>
         </Button>
       </div>
       <div className='flex flex-row gap-2'>
-        <div className='flex-1/3'>
-          <Label className='text-muted-foreground mb-1 block text-xs'>Qty</Label>
+        <div className='flex-1'>
+          <Label className='text-muted-foreground mb-1 block text-xs'>Masa Pakai (Tahun)</Label>
           <Controller
-            name={`equipmentData.${index}.quantity`}
+            name={`equipmentData.${index}.life_span_years`}
             render={({ field: { value, onChange } }) => (
               <NumberInput value={value} onValueChange={onChange} placeholder='0' min={1} />
             )}
           />
         </div>
 
-        <div className='flex-2/3'>
+        <div className='flex-1'>
           <Label className='text-muted-foreground mb-1 block text-xs'>Estimasi Harga</Label>
           <Controller
             name={`equipmentData.${index}.estimated_price`}
@@ -80,9 +81,9 @@ const EquipmentHeader = () => {
       <div>
         <h3 className='flex items-center gap-2 font-semibold'>
           <Package className='text-primary h-5 w-5' />
-          Peralatan Starter Kit
+          Peralatan
         </h3>
-        <p className='text-muted-foreground text-sm'>Peralatan dasar untuk memulai bisnis</p>
+        <p className='text-muted-foreground text-sm'>Peralatan yang diperlukan untuk bisnis</p>
       </div>
     </div>
   );
@@ -116,7 +117,7 @@ const EquipmentTotal = () => {
 
   const calculateTotal = (items: typeof equipment) => {
     // Need to type items properly or let TS infer from useWatch but sometimes generic
-    return (items || []).reduce((sum, item) => sum + item.quantity * item.estimated_price, 0);
+    return (items || []).reduce((sum, item) => sum + item.estimated_price, 0);
   };
 
   return (
@@ -125,7 +126,6 @@ const EquipmentTotal = () => {
         <div className='flex items-center justify-between'>
           <div>
             <span className='font-medium'>Estimasi Modal Peralatan</span>
-            <p className='text-muted-foreground text-xs'>{(equipment || []).length} item dipilih</p>
           </div>
           <span className='text-primary text-xl font-bold'>
             Rp {calculateTotal(equipment).toLocaleString('id-ID')}
@@ -145,17 +145,23 @@ export function EquipmentSetup({ onBack, onNext }: EquipmentSetupProps) {
     name: 'equipmentData',
   });
 
-  const addItem = () => {
+  const addItem = useCallback(() => {
     append({
       id: `custom-${Date.now()}`,
       name: '',
-      quantity: 1,
+      life_span_years: 5,
       estimated_price: 0,
       priority: 'optional',
       isAiSuggested: false,
       isSelected: true,
     });
-  };
+  }, [append]);
+
+  useEffect(() => {
+    if (fields.length === 0) {
+      addItem();
+    }
+  }, [fields.length, addItem]);
 
   return (
     <div className='space-y-4'>

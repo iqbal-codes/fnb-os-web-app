@@ -28,6 +28,26 @@ export type { OnboardingFormValues } from '@/components/onboarding/types';
 
 const TOTAL_STEPS = 5;
 
+const DEFAULT_FORM_VALUES: OnboardingFormValues = {
+  businessName: '',
+  businessType: undefined,
+  city: '',
+  operatingModel: '',
+  operatingModelSecondary: '',
+  openDays: [],
+  opexData: [],
+  equipmentData: [],
+  menuData: {
+    name: '',
+    category: 'minuman',
+    description: '',
+    ingredients: [],
+    estimatedCogs: 0,
+    suggestedPrice: 0,
+  },
+  bulkMenus: [],
+};
+
 export default function OnboardingPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -45,34 +65,16 @@ export default function OnboardingPage() {
   const methods = useForm<OnboardingFormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(onboardingSchema) as any,
-    defaultValues: {
-      businessName: '',
-      businessType: undefined,
-      city: '',
-      operatingModel: '',
-      operatingModelSecondary: '',
-      openDays: [],
-      opexData: [],
-      equipmentData: [],
-      menuData: {
-        name: '',
-        category: 'minuman',
-        description: '',
-        ingredients: [],
-        estimatedCogs: 0,
-        suggestedPrice: 0,
-      },
-      bulkMenus: [],
-    },
+    defaultValues: DEFAULT_FORM_VALUES,
     mode: 'onChange',
   });
 
-  const { setValue, trigger, getValues } = methods;
+  const { trigger, getValues, reset } = methods;
   // Removed top-level watch to prevent full page re-renders
 
   const progress = (step / TOTAL_STEPS) * 100;
 
-  const { user } = useAuthStore();
+  const { user, isLoading: isAuthLoading } = useAuthStore();
   const userId = user?.id;
 
   // React Query for Remote State
@@ -82,10 +84,12 @@ export default function OnboardingPage() {
   // Load state on mount - sync with Supabase and LocalStorage
   useEffect(() => {
     const restoreState = async () => {
-      // Must wait for user to be checked
-      if (userId === undefined) return;
+      // 0. Wait for Auth to initialize
+      if (isAuthLoading) return;
+
+      // 1. Handle Guest / Not Logged In
       if (!userId) {
-        // Handle case if no user but on this page? Middleware prevents this, but safe to check.
+        // If no user, we can't restore specific state, but we should allow the form to function (without persistence)
         setIsHydrated(true);
         return;
       }
@@ -93,18 +97,21 @@ export default function OnboardingPage() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let finalState: any = null;
 
-      // 1. Try LocalStorage (Fastest)
-      const localKey = `SAJIPLAN_ONBOARDING_STATE_${userId}`;
+      // 2. Try LocalStorage (Fastest)
+      const localKey = `EFENBI_ONBOARDING_STATE_${userId}`;
       const localSaved = localStorage.getItem(localKey);
-      const localState = localSaved ? JSON.parse(localSaved) : null;
 
-      // 2. Compare with Remote (from React Query)
-      // We only run this logic if we have remote state or if we are sure remote state is empty/loaded
-      // For now, let's treat the query data as available if the hook executed.
+      let localState = null;
+      try {
+        localState = localSaved ? JSON.parse(localSaved) : null;
+      } catch (err) {
+        console.error('Failed to parse local state', err);
+      }
 
+      // 3. Compare with Remote (from React Query)
       if (
         remoteState &&
-        (!localState || new Date(remoteState.updatedAt) > new Date(localState.updatedAt))
+        (!localState || new Date(remoteState.updatedAt || 0) > new Date(localState?.updatedAt || 0))
       ) {
         finalState = remoteState;
         // Sync back to local
@@ -113,15 +120,17 @@ export default function OnboardingPage() {
         finalState = localState;
       }
 
-      // 3. Restore
+      // 4. Restore
       if (finalState) {
         try {
-          // Restore Form Values
+          // Restore Form Values using reset to ensure atomic update
           if (finalState.formValues) {
-            Object.keys(finalState.formValues).forEach((key) => {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              setValue(key as keyof OnboardingFormValues, finalState.formValues[key] as any);
-            });
+            // Merge with defaults to ensure structure
+            const mergedValues = {
+              ...DEFAULT_FORM_VALUES,
+              ...finalState.formValues,
+            };
+            reset(mergedValues);
           }
 
           // Restore Max Step
@@ -133,12 +142,12 @@ export default function OnboardingPage() {
         }
       }
 
-      // 5. Enable Validation
+      // 5. Enable Validation and Persistence
       setIsHydrated(true);
     };
 
     restoreState();
-  }, [setValue, userId, remoteState]);
+  }, [userId, remoteState, reset, isAuthLoading]);
 
   // Validation: Prevent URL jumping and invalid steps
   useEffect(() => {
@@ -223,7 +232,7 @@ export default function OnboardingPage() {
         isPlanningMode: true,
       });
 
-      localStorage.removeItem('SAJIPLAN_ONBOARDING_STATE');
+      localStorage.removeItem('EFENBI_ONBOARDING_STATE');
       toast.success('Business created successfully!');
       router.push('/planning');
       router.refresh();
@@ -243,6 +252,7 @@ export default function OnboardingPage() {
         step={step}
         maxReachedStep={maxReachedStep}
         userId={userId || ''}
+        enabled={isHydrated}
       />
       <div className='animate-fade-in'>
         {/* Progress Helper */}

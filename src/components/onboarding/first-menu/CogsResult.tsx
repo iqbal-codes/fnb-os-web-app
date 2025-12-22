@@ -84,12 +84,6 @@ export function CogsResult({
               Rp {suggestedPrice.toLocaleString('id-ID')}
             </p>
           </div>
-
-          <div className='flex justify-center'>
-            <Button variant='outline' size='sm' onClick={onEditIngredients}>
-              Edit Bahan
-            </Button>
-          </div>
         </CardContent>
       </Card>
     </div>

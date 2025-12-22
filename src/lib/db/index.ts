@@ -61,7 +61,7 @@ interface SyncMetadata {
 }
 
 // Dexie database class
-class SajiPlanDB extends Dexie {
+class eFeNBiDB extends Dexie {
   offlineOrders!: EntityTable<OfflineOrder, 'id'>;
   offlineInventoryLogs!: EntityTable<OfflineInventoryLog, 'id'>;
   cachedMenus!: EntityTable<CachedMenu, 'id'>;
@@ -69,7 +69,7 @@ class SajiPlanDB extends Dexie {
   syncMetadata!: EntityTable<SyncMetadata, 'id'>;
 
   constructor() {
-    super('SajiPlanDB');
+    super('eFeNBiDB');
 
     this.version(1).stores({
       offlineOrders: 'id, business_id, created_at, synced',
@@ -82,7 +82,7 @@ class SajiPlanDB extends Dexie {
 }
 
 // Singleton instance
-export const db = new SajiPlanDB();
+export const db = new eFeNBiDB();
 
 // Helper functions for offline operations
 export const offlineDB = {

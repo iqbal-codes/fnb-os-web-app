@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { OnboardingFormValues } from '@/components/onboarding/types';
+import { useCallback, useEffect } from 'react';
 
 interface OpexSetupProps {
   onBack: () => void;
@@ -165,14 +166,20 @@ export function OpexSetup({ onBack, onNext }: OpexSetupProps) {
     name: 'opexData',
   });
 
-  const addCategory = () => {
+  const addCategory = useCallback(() => {
     append({
       id: `custom-${Date.now()}`,
       name: '',
       amount: 0,
       frequency: 'monthly',
     });
-  };
+  }, [append]);
+
+  useEffect(() => {
+    if (fields.length === 0) {
+      addCategory();
+    }
+  }, [fields.length, addCategory]);
 
   return (
     <div className='space-y-4'>

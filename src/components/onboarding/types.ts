@@ -26,7 +26,7 @@ export interface OpexItem {
 export interface EquipmentItem {
   id: string;
   name: string;
-  quantity: number;
+  life_span_years: number;
   estimated_price: number;
   priority: EquipmentPriority;
   isAiSuggested: boolean;
@@ -41,6 +41,7 @@ export interface Ingredient {
   buyingQuantity?: number;
   buyingUnit?: string;
   buyingPrice?: number;
+  category: 'ingredient' | 'packaging';
   isDifferentUnit: boolean;
   isAiSuggested: boolean;
 }

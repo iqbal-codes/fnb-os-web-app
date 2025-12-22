@@ -1,4 +1,4 @@
--- SajiPlan Additional Tables Migration
+-- eFeNBi Additional Tables Migration
 -- Note: businesses.user_id is the owner column (not owner_id)
 -- Note: orders and opex_categories already exist in 001_initial_schema.sql
 
